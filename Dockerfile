@@ -27,6 +27,9 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
+# Install bash (Alpine only has sh) — needed by shell-api launch profiles
+RUN apk add --no-cache bash
+
 # Don't run as root
 RUN addgroup --system --gid 1001 nodejs && \
     adduser  --system --uid 1001 nextjs

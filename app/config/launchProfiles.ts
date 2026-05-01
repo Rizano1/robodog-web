@@ -55,12 +55,11 @@ export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
         label: "Real Robot",
         description: "SSH into the physical robot and start ROS nodes",
         background: true,
-        rosbridgeUrl: "ws://10.7.101.231:9090",
         command: [
-            "./start_ano.sh"
+            "bash ~/start_ano.sh"
         ].join("\n"),
         killCommand: [
-            "./stop_ano.sh"
+            "bash ~/stop_ano.sh"
         ].join("; "),
     },
 };
