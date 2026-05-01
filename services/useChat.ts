@@ -128,8 +128,7 @@ export function useSendMessage() {
     >({
         mutationFn: async (payload) => {
             console.log("Sending payload:", payload);
-            const chatApiUrl = process.env.NEXT_PUBLIC_CHAT_API_URL ?? "http://127.0.0.1:8082";
-            const res = await fetch(`${chatApiUrl}/api/chat_robot`, {
+            const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

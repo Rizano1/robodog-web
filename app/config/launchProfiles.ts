@@ -56,10 +56,10 @@ export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
         description: "SSH into the physical robot and start ROS nodes",
         background: true,
         command: [
-            "bash ~/start_ano.sh"
+            // "bash ~/start_ano.sh"
         ].join("\n"),
         killCommand: [
-            "bash ~/stop_ano.sh"
+            // "bash ~/stop_ano.sh"
         ].join("; "),
     },
 };
