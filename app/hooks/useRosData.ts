@@ -267,8 +267,14 @@ export function useMapData(mode: string = "simulation"): MapData | null {
     });
 
     const handler = throttle((msg: any) => {
+      console.log(`[roslibjs] Map message received: ${msg?.info?.width}x${msg?.info?.height}, data length: ${msg?.data?.length}`);
       const result = occupancyGridToDataUri(msg);
-      if (result) setMapData(result);
+      if (result) {
+        console.log(`[roslibjs] Map converted successfully: ${result.width}x${result.height}`);
+        setMapData(result);
+      } else {
+        console.warn("[roslibjs] occupancyGridToDataUri returned null");
+      }
     }, 1000);
 
     mapTopic.subscribe(handler);
