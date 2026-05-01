@@ -4,6 +4,7 @@ node_modules
 .gitignore
 *.md
 .env*
+!.env.local
 .DS_Store
 npm-debug.log*
 .vercel

@@ -12,11 +12,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Default env vars for build time (override at runtime via docker run -e)
-ENV NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:8000
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=changeme
-ENV NEXT_PUBLIC_ROSBRIDGE_URL=ws://127.0.0.1:9090
-
+# .env.local is copied in and read automatically by Next.js at build time
 RUN npm run build
 
 # ── Stage 3: Production image ─────────────────────────────────────
