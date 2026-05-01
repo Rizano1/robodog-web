@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Treat empty/whitespace-only commands as no-ops
+        if (!command.trim()) {
+            return NextResponse.json({ ok: true, message: "No command to execute" });
+        }
+
         console.log(`[shell-api] Executing${background ? " (background)" : ""}:`, command.slice(0, 200));
 
         if (background) {
