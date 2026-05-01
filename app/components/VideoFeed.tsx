@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from "react";
 import { Video, Circle } from "lucide-react";
 
-const STREAM_URL = "http://10.7.101.231:1984/stream.html?src=front_facing&mode=webrtc,mse,hls,mjpeg";
+const STREAM_URL = "http://0.0.0.0:1984/stream.html?src=front_facing&mode=webrtc,mse,hls,mjpeg";
 
 export default function VideoFeed() {
     const [timestamp, setTimestamp] = useState("");

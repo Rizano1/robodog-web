@@ -57,10 +57,10 @@ export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
         background: true,
         rosbridgeUrl: "ws://10.7.101.231:9090",
         command: [
-            // "sshpass -p \"'\" ssh -f -n -o StrictHostKeyChecking=no ysc@10.7.101.231 './start_ano.sh'",
+            "./start_ano.sh"
         ].join("\n"),
         killCommand: [
-            // "sshpass -p \"'\" ssh -o StrictHostKeyChecking=no ysc@10.7.101.231 'bash -lc \"./stop_ano.sh\"' || true",
+            "./stop_ano.sh"
         ].join("; "),
     },
 };
