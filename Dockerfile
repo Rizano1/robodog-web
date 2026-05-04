@@ -24,18 +24,13 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 # Install bash (Alpine only has sh) — needed by shell-api launch profiles
-RUN apk add --no-cache bash
-
-# Don't run as root
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser  --system --uid 1001 nextjs
+# Install nsenter via util-linux — used to execute commands on the host OS
+RUN apk add --no-cache bash util-linux
 
 # Copy only what the standalone server needs
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
+COPY --from=builder --chown=root:root /app/.next/standalone ./
+COPY --from=builder --chown=root:root /app/.next/static ./.next/static
 
 EXPOSE 3000
 

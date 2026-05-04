@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    container_name: robodog-web-app
+    restart: unless-stopped
+    network_mode: host
+    pid: host
+    privileged: true
+    environment:
+      - HOST_USER=ysc
+      - NODE_ENV=production
