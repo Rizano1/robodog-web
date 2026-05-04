@@ -26,10 +26,10 @@ export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
         description: "Start ROS nodes on the physical robot",
         background: true,
         command: [
-            "bash ~/start_nav.sh"
+            "bash ~/robodog_ano/scripts/start_nav.sh"
         ].join("\n"),
         killCommand: [
-            "bash ~/stop_nav.sh"
+            "bash ~/robodog_ano/scripts/stop_nav.sh"
         ].join("; "),
     },
 
