@@ -57,12 +57,6 @@ interface TopicConfig {
 }
 
 const TOPIC_CONFIGS: Record<string, TopicConfig> = {
-  simulation: {
-    mapTopic: "/map",
-    scanTopic: "/scan",
-    planTopic: "/plan",
-    odomTopic: "/odom",
-  },
   realRobot: {
     mapTopic: "/map",
     scanTopic: "/scan",
@@ -183,7 +177,7 @@ export function useRosConnection(): boolean {
 
 /** Get topic config for a mode */
 export function getTopicConfig(mode: string): TopicConfig {
-  return TOPIC_CONFIGS[mode] || TOPIC_CONFIGS.simulation;
+  return TOPIC_CONFIGS[mode] || TOPIC_CONFIGS.realRobot;
 }
 
 // ─── OccupancyGrid → Canvas Data URI ─────────────────
@@ -252,7 +246,7 @@ function occupancyGridToDataUri(msg: any): MapData | null {
 }
 
 /** Subscribe to occupancy grid map. */
-export function useMapData(mode: string = "simulation"): MapData | null {
+export function useMapData(mode: string = "realRobot"): MapData | null {
   const [mapData, setMapData] = useState<MapData | null>(null);
   const config = getTopicConfig(mode);
 
@@ -263,19 +257,27 @@ export function useMapData(mode: string = "simulation"): MapData | null {
       ros,
       name: config.mapTopic,
       messageType: "nav_msgs/OccupancyGrid",
-      throttle_rate: 1000,
+      throttle_rate: 2000,
     });
 
-    const handler = throttle((msg: any) => {
-      console.log(`[roslibjs] Map message received: ${msg?.info?.width}x${msg?.info?.height}, data length: ${msg?.data?.length}`);
+    let lastUpdate = 0;
+
+    const handler = (msg: any) => {
+      console.log("[roslibjs] /map raw callback fired, keys:", Object.keys(msg || {}));
+
+      const now = Date.now();
+      if (now - lastUpdate < 1000) return;
+      lastUpdate = now;
+
+      console.log(`[roslibjs] Map info: ${msg?.info?.width}x${msg?.info?.height}, data length: ${msg?.data?.length}`);
       const result = occupancyGridToDataUri(msg);
       if (result) {
-        console.log(`[roslibjs] Map converted successfully: ${result.width}x${result.height}`);
+        console.log(`[roslibjs] Map converted: ${result.width}x${result.height}`);
         setMapData(result);
       } else {
         console.warn("[roslibjs] occupancyGridToDataUri returned null");
       }
-    }, 1000);
+    };
 
     mapTopic.subscribe(handler);
     console.log(`[roslibjs] Subscribed to ${config.mapTopic} (OccupancyGrid)`);
@@ -289,7 +291,7 @@ export function useMapData(mode: string = "simulation"): MapData | null {
 }
 
 /** Subscribe to odometry from /odom. */
-export function useOdometry(mode: string = "simulation"): OdomData | null {
+export function useOdometry(mode: string = "realRobot"): OdomData | null {
   const [odom, setOdom] = useState<OdomData | null>(null);
   const config = getTopicConfig(mode);
 
@@ -325,7 +327,7 @@ export function useOdometry(mode: string = "simulation"): OdomData | null {
 }
 
 /** Subscribe to laser scan. */
-export function useScanData(mode: string = "simulation"): ScanData | null {
+export function useScanData(mode: string = "realRobot"): ScanData | null {
   const [scan, setScan] = useState<ScanData | null>(null);
   const config = getTopicConfig(mode);
 
@@ -378,7 +380,7 @@ export function useScanData(mode: string = "simulation"): ScanData | null {
 }
 
 /** Subscribe to navigation plan. */
-export function usePlanData(mode: string = "simulation"): PlanData | null {
+export function usePlanData(mode: string = "realRobot"): PlanData | null {
   const [plan, setPlan] = useState<PlanData | null>(null);
   const config = getTopicConfig(mode);
 

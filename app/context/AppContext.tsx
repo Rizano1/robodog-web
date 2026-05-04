@@ -59,7 +59,7 @@ interface AppState {
     /** Current launch mode: "inspection" | "slam" | null (idle) */
     launchMode: "inspection" | "slam" | null;
 
-    /** Current launch profile key (e.g. "simulation", "realRobot") */
+    /** Current launch profile key (e.g. "realRobot") */
     launchProfile: string | null;
 
     /** Whether a launch/stop operation is in progress */

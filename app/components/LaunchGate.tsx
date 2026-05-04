@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * LaunchGate — A full-page "choose your launch" gate.
- * Shows Simulation vs Real Robot cards. Blocks launch if
+ * LaunchGate — A full-page "start session" gate.
+ * Shows a single Real Robot launch card. Blocks launch if
  * another mode (inspection/slam) is already running.
  *
  * Web version: executes shell commands via the /api/shell API route
@@ -12,7 +12,6 @@
 import React from "react";
 import {
     Play,
-    Monitor,
     Cpu,
     AlertTriangle,
     Scan,
@@ -31,12 +30,6 @@ interface LaunchGateProps {
     subtitle: string;
 }
 
-/** Map mode→profile key for simulation */
-const MODE_PROFILE_MAP: Record<string, { sim: string; real: string }> = {
-    inspection: { sim: "simulation", real: "realRobot" },
-    slam: { sim: "slam", real: "realRobot" },
-};
-
 export default function LaunchGate({ mode, title, subtitle }: LaunchGateProps) {
     const { launchMode, launching, startLaunch } = useApp();
 
@@ -44,9 +37,8 @@ export default function LaunchGate({ mode, title, subtitle }: LaunchGateProps) {
     const isBlocked = launchMode !== null && launchMode !== mode;
     const blockedByLabel = launchMode === "inspection" ? "Inspection Hub" : "SLAM Mapping";
 
-    const profileMap = MODE_PROFILE_MAP[mode];
-    const simProfile = LAUNCH_PROFILES[profileMap.sim];
-    const realProfile = LAUNCH_PROFILES[profileMap.real];
+    const profileKey = mode === "slam" ? "slam" : "realRobot";
+    const profile = LAUNCH_PROFILES[profileKey];
 
     // Loading state while launching
     if (launching) {
@@ -109,44 +101,21 @@ export default function LaunchGate({ mode, title, subtitle }: LaunchGateProps) {
                     {subtitle}
                 </p>
 
-                {/* Launch cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
-                    {/* Simulation */}
+                {/* Launch card */}
+                <div className="flex justify-center">
                     <button
-                        onClick={() => startLaunch(mode, profileMap.sim)}
-                        className="group relative flex flex-col items-center gap-4 p-6 rounded-2xl border border-border bg-surface hover:bg-surface-hover hover:border-accent/30 transition-all duration-300"
-                    >
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/15 text-accent group-hover:bg-accent/25 transition-colors">
-                            <Monitor size={28} />
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-foreground mb-1">
-                                {simProfile?.label || "Simulation"}
-                            </h3>
-                            <p className="text-xs text-muted leading-relaxed">
-                                {simProfile?.description || "Launch Gazebo simulation"}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Play size={12} />
-                            Launch
-                        </div>
-                    </button>
-
-                    {/* Real Robot */}
-                    <button
-                        onClick={() => startLaunch(mode, profileMap.real)}
-                        className="group relative flex flex-col items-center gap-4 p-6 rounded-2xl border border-border bg-surface hover:bg-surface-hover hover:border-success/30 transition-all duration-300"
+                        onClick={() => startLaunch(mode, profileKey)}
+                        className="group relative flex flex-col items-center gap-4 p-6 rounded-2xl border border-border bg-surface hover:bg-surface-hover hover:border-success/30 transition-all duration-300 max-w-xs w-full"
                     >
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-success/15 text-success group-hover:bg-success/25 transition-colors">
                             <Cpu size={28} />
                         </div>
                         <div>
                             <h3 className="text-sm font-semibold text-foreground mb-1">
-                                {realProfile?.label || "Real Robot"}
+                                {profile?.label || "Real Robot"}
                             </h3>
                             <p className="text-xs text-muted leading-relaxed">
-                                {realProfile?.description || "Connect to physical robot"}
+                                {profile?.description || "Connect to physical robot"}
                             </p>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs font-medium text-success opacity-0 group-hover:opacity-100 transition-opacity">

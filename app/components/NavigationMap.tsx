@@ -51,7 +51,7 @@ type InteractMode = "pan" | "pose" | "goal";
 export default function NavigationMap() {
     const { launchProfile } = useApp();
     const rosConnected = useRosConnection();
-    const rosMode = launchProfile || "simulation";
+    const rosMode = launchProfile || "realRobot";
 
     // ROS data hooks
     const mapData = useMapData(rosMode);

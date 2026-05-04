@@ -4,7 +4,7 @@
  * Page 1: Inspection Hub — the main dashboard.
  * 
  * Flow:
- * 1. When no launch is active → shows LaunchGate (choose Simulation or Real Robot)
+ * 1. When no launch is active → shows LaunchGate (launch Real Robot)
  * 2. When inspection launch is active → shows the full dashboard
  *    (ChatPanel, VideoFeed, NavigationMap) with an ActiveSessionBar to stop
  */

@@ -1,6 +1,6 @@
 /**
- * Pre-defined launch profiles for different robot environments.
- * ROS 1 (Noetic) version.
+ * Pre-defined launch profiles for the robot environment.
+ * ROS 1 (Noetic) version — on-robot branch (no simulation).
  *
  * In the web app, shell commands are executed via the Next.js API route
  * `/api/shell` (Node.js server-side), replicating Electron's IPC mechanism.
@@ -21,39 +21,21 @@ export interface LaunchProfile {
 }
 
 export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
-    simulation: {
-        label: "Simulation (Nav)",
-        description: "Launch Gazebo simulation with navigation stack",
+    realRobot: {
+        label: "Real Robot",
+        description: "Start ROS nodes on the physical robot",
+        background: true,
         command: [
-            "cd ~/Documents/robodog-sim",
-            "source devel/setup.bash",
-            "roslaunch champ_config gazebo.launch &",
-            "sleep 5",
-            "roslaunch champ_config navigate.launch",
+            "bash ~/start_nav.sh"
         ].join("\n"),
-        // killCommand: "(pkill -f 'champ_config' 2>/dev/null; pkill -f 'gazebo' 2>/dev/null; pkill -f 'move_base' 2>/dev/null; pkill -f 'navigate.launch' 2>/dev/null) || true",
-        killCommand: "",
-
+        killCommand: [
+            "bash ~/stop_nav.sh"
+        ].join("; "),
     },
 
     slam: {
-        label: "Simulation (SLAM)",
-        description: "Launch Gazebo simulation with SLAM mapping",
-        command: [
-            "cd ~/Documents/robodog-sim",
-            "source devel/setup.bash",
-            "roslaunch champ_config gazebo.launch &",
-            "sleep 5",
-            "roslaunch champ_config slam.launch",
-        ].join("\n"),
-        // killCommand: "(pkill -f 'champ_config' 2>/dev/null; pkill -f 'gazebo' 2>/dev/null; pkill -f 'slam.launch' 2>/dev/null) || true",
-        killCommand: "",
-
-    },
-
-    realRobot: {
-        label: "Real Robot",
-        description: "SSH into the physical robot and start ROS nodes",
+        label: "SLAM Mapping",
+        description: "Launch SLAM mapping on the real robot",
         background: true,
         command: [
             // "bash ~/start_ano.sh"
@@ -65,7 +47,7 @@ export const LAUNCH_PROFILES: Record<string, LaunchProfile> = {
 };
 
 /** Default profile key */
-export const DEFAULT_PROFILE = "simulation";
+export const DEFAULT_PROFILE = "realRobot";
 
 /** Get list of profile entries for UI dropdowns */
 export const getProfileList = () =>

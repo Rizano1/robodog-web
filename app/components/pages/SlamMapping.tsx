@@ -4,7 +4,7 @@
  * SLAM Page — Full-screen SLAM map with save-map functionality.
  *
  * Flow:
- * 1. When no launch is active → shows LaunchGate (choose Simulation or Real Robot)
+ * 1. When no launch is active → shows LaunchGate (launch Real Robot)
  *    - If Inspection is running, LaunchGate shows a blocker message.
  * 2. When SLAM launch is active → shows full SLAM view with save-map dialog
  *    and ActiveSessionBar to stop the session.
