@@ -3,9 +3,8 @@
 /**
  * Dynamic main content area for the Spatial Explorer.
  * Renders different views based on what is selected in the tree:
- *   - Map selected → top-level locations table
- *   - Location selected → sub-locations + object waypoints tables
- *   - Nothing selected → welcome / placeholder
+ *   - Nothing selected → Root-level locations table
+ *   - Location selected → Sub-locations + Object waypoints tables
  */
 
 import React, { useState } from "react";
@@ -17,12 +16,13 @@ import {
     Loader2,
     Target,
     ChevronDown,
-    FolderOpen,
+    MapIcon,
 } from "lucide-react";
 import type { ExplorerNode } from "./ExplorerTreeSidebar";
-import { useGetLocationsByMap, useGetSubLocations, useDeleteLocation } from "@/services/useLocations";
+import { useGetRootLocations, useGetSubLocations, useDeleteLocation } from "@/services/useLocations";
 import { useGetWaypointsByLocation, useDeleteWaypoint } from "@/services/useWaypoints";
 import { useGetObjects } from "@/services/useObjects";
+import { useGetMaps } from "@/services/useMaps";
 import LocationModal from "./LocationModal";
 import ObjectWaypointModal from "./ObjectWaypointModal";
 import type { Location, ObjectWaypoint } from "@/types/database";
@@ -33,18 +33,6 @@ interface ExplorerMainContentProps {
 }
 
 export default function ExplorerMainContent({ selectedNode, onNavigate }: ExplorerMainContentProps) {
-    // --- Map selected: show top-level locations ---
-    if (selectedNode?.type === "map") {
-        return (
-            <MapView
-                mapId={selectedNode.data.id}
-                mapName={selectedNode.data.name}
-                onNavigate={onNavigate}
-            />
-        );
-    }
-
-    // --- Location selected: show sub-locations + waypoints ---
     if (selectedNode?.type === "location") {
         return (
             <LocationView
@@ -54,35 +42,24 @@ export default function ExplorerMainContent({ selectedNode, onNavigate }: Explor
         );
     }
 
-    // --- Nothing selected ---
-    return (
-        <div className="h-full flex flex-col items-center justify-center gap-3 text-muted">
-            <FolderOpen size={40} strokeWidth={1.2} className="opacity-30" />
-            <p className="text-sm">Select a map or location from the tree</p>
-            <p className="text-xs opacity-60">to view and manage its contents</p>
-        </div>
-    );
+    // --- Nothing selected: show root locations ---
+    return <RootLocationsView onNavigate={onNavigate} />;
 }
 
 /* ═══════════════════════════════════════════════════════
-   Map View — shows top-level locations
+   Root Locations View — shows top-level locations
    ═══════════════════════════════════════════════════════ */
 
-function MapView({
-    mapId,
-    mapName,
-    onNavigate,
-}: {
-    mapId: number;
-    mapName: string;
-    onNavigate: (node: ExplorerNode) => void;
-}) {
-    const { data: locations = [], isLoading } = useGetLocationsByMap(mapId);
+function RootLocationsView({ onNavigate }: { onNavigate: (node: ExplorerNode) => void }) {
+    const { data: locations = [], isLoading } = useGetRootLocations();
     const deleteLocation = useDeleteLocation();
+    const { data: maps = [] } = useGetMaps();
     const [modal, setModal] = useState<{ open: boolean; editing: Location | null }>({
         open: false,
         editing: null,
     });
+
+    const getMapName = (mapId: number | null) => maps.find((m) => m.id === mapId)?.name;
 
     return (
         <div className="h-full flex flex-col gap-3">
@@ -90,7 +67,7 @@ function MapView({
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-accent" />
-                    <h3 className="text-sm font-semibold text-foreground">Locations</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Root Locations</h3>
                     <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-muted">
                         {locations.length}
                     </span>
@@ -111,7 +88,7 @@ function MapView({
                 </div>
             ) : locations.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
-                    <p className="text-xs text-muted">No locations in this map yet.</p>
+                    <p className="text-xs text-muted">No root locations yet.</p>
                 </div>
             ) : (
                 <div className="glass-panel-light flex-1 overflow-auto">
@@ -119,6 +96,7 @@ function MapView({
                         <thead>
                             <tr className="border-b border-border text-left">
                                 <th className="px-4 py-2.5 font-semibold text-muted">Name</th>
+                                <th className="px-4 py-2.5 font-semibold text-muted">Map</th>
                                 <th className="px-4 py-2.5 font-semibold text-muted">Type</th>
                                 <th className="px-4 py-2.5 font-semibold text-muted">Arrival X</th>
                                 <th className="px-4 py-2.5 font-semibold text-muted">Arrival Y</th>
@@ -134,6 +112,14 @@ function MapView({
                                     onClick={() => onNavigate({ type: "location", data: loc })}
                                 >
                                     <td className="px-4 py-2.5 font-medium text-foreground">{loc.name}</td>
+                                    <td className="px-4 py-2.5">
+                                        {loc.map_id && (
+                                            <div className="flex items-center gap-1 text-accent">
+                                                <MapIcon size={11} />
+                                                <span className="text-[10px] font-medium">{getMapName(loc.map_id) || "Map"}</span>
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-2.5">
                                         {loc.type && (
                                             <span className="rounded-full bg-surface-active px-2 py-0.5 text-[10px] font-medium text-foreground/70">
@@ -179,7 +165,7 @@ function MapView({
             {modal.open && (
                 <LocationModal
                     editing={modal.editing}
-                    defaults={{ map_id: mapId, parent_id: null }}
+                    defaults={{ parent_id: null }}
                     onClose={() => setModal({ open: false, editing: null })}
                 />
             )}
@@ -201,6 +187,7 @@ function LocationView({
     const { data: subLocations = [], isLoading: subLoading } = useGetSubLocations(location.id);
     const { data: waypoints = [], isLoading: wpLoading } = useGetWaypointsByLocation(location.id);
     const { data: objects = [] } = useGetObjects();
+    const { data: maps = [] } = useGetMaps();
     const deleteLocation = useDeleteLocation();
     const deleteWaypoint = useDeleteWaypoint();
 
@@ -217,9 +204,19 @@ function LocationView({
     const [wpCollapsed, setWpCollapsed] = useState(false);
 
     const getObjectName = (objectId: number) => objects.find((o) => o.id === objectId)?.name ?? `#${objectId}`;
+    const getMapName = (mapId: number | null) => maps.find((m) => m.id === mapId)?.name;
 
     return (
         <div className="h-full flex flex-col gap-4 overflow-auto">
+            {/* Context Badge if location has map */}
+            {location.map_id && (
+                <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-lg px-3 py-2 text-xs">
+                    <MapIcon size={14} className="text-accent" />
+                    <span className="text-muted">Associated Map:</span>
+                    <span className="font-semibold text-accent">{getMapName(location.map_id) || "Loading..."}</span>
+                </div>
+            )}
+
             {/* ── Sub-Locations Section ── */}
             <div>
                 <button
@@ -270,6 +267,7 @@ function LocationView({
                                     <thead>
                                         <tr className="border-b border-border text-left">
                                             <th className="px-3 py-2 font-semibold text-muted">Name</th>
+                                            <th className="px-3 py-2 font-semibold text-muted">Map</th>
                                             <th className="px-3 py-2 font-semibold text-muted">Type</th>
                                             <th className="px-3 py-2 font-semibold text-muted">X</th>
                                             <th className="px-3 py-2 font-semibold text-muted">Y</th>
@@ -285,6 +283,14 @@ function LocationView({
                                                 onClick={() => onNavigate({ type: "location", data: sub })}
                                             >
                                                 <td className="px-3 py-2 font-medium text-foreground">{sub.name}</td>
+                                                <td className="px-3 py-2">
+                                                    {sub.map_id && (
+                                                        <div className="flex items-center gap-1 text-accent">
+                                                            <MapIcon size={10} />
+                                                            <span className="text-[10px]">{getMapName(sub.map_id) || "Map"}</span>
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className="px-3 py-2">
                                                     {sub.type && (
                                                         <span className="rounded-full bg-surface-active px-2 py-0.5 text-[10px] text-foreground/70">
@@ -443,7 +449,7 @@ function LocationView({
             {locModal.open && (
                 <LocationModal
                     editing={locModal.editing}
-                    defaults={{ map_id: location.map_id, parent_id: location.id }}
+                    defaults={{ parent_id: location.id }}
                     onClose={() => setLocModal({ open: false, editing: null })}
                 />
             )}

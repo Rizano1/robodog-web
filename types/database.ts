@@ -28,9 +28,10 @@ export interface Location {
     arrival_x: number;
     arrival_y: number;
     arrival_yaw: number;
-    /** null = top-level location under a map */
+    /** null = root-level location (no parent) */
     parent_id: number | null;
-    map_id: number;
+    /** null = no map associated with this location */
+    map_id: number | null;
 }
 
 /** Payload for creating a new location */

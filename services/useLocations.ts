@@ -31,18 +31,16 @@ export function useGetAllLocations() {
     });
 }
 
-/** Fetch top-level locations for a specific map (parent_id is null) */
-export function useGetLocationsByMap(mapId: number | null) {
+/** Fetch top-level locations (parent_id is null) */
+export function useGetRootLocations() {
     const supabase = getSupabaseBrowserClient();
 
     return useQuery<Location[]>({
-        queryKey: [...QUERY_KEY, "by-map", mapId],
-        enabled: mapId !== null,
+        queryKey: [...QUERY_KEY, "roots"],
         queryFn: async () => {
             const { data, error } = await supabase
                 .from("locations")
                 .select("*")
-                .eq("map_id", mapId!)
                 .is("parent_id", null)
                 .order("created_at", { ascending: true });
 

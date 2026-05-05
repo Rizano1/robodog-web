@@ -7,39 +7,28 @@
  */
 
 import React from "react";
-import { ChevronRight, MapIcon, MapPin } from "lucide-react";
+import { ChevronRight, MapPin } from "lucide-react";
 import type { ExplorerNode } from "./ExplorerTreeSidebar";
-import type { MapRecord, Location } from "@/types/database";
+import type { Location } from "@/types/database";
 
 interface ExplorerBreadcrumbProps {
     selectedNode: ExplorerNode | null;
     allLocations: Location[];
-    allMaps: MapRecord[];
     onNavigate: (node: ExplorerNode | null) => void;
 }
 
 export default function ExplorerBreadcrumb({
     selectedNode,
     allLocations,
-    allMaps,
     onNavigate,
 }: ExplorerBreadcrumbProps) {
     /** Build breadcrumb segments from leaf to root */
-    const buildCrumbs = (): Array<{ label: string; node: ExplorerNode | null; icon: "map" | "location" | "home" }> => {
-        const crumbs: Array<{ label: string; node: ExplorerNode | null; icon: "map" | "location" | "home" }> = [
+    const buildCrumbs = (): Array<{ label: string; node: ExplorerNode | null; icon: "location" | "home" }> => {
+        const crumbs: Array<{ label: string; node: ExplorerNode | null; icon: "location" | "home" }> = [
             { label: "Explorer", node: null, icon: "home" },
         ];
 
         if (!selectedNode) return crumbs;
-
-        if (selectedNode.type === "map") {
-            crumbs.push({
-                label: selectedNode.data.name,
-                node: selectedNode,
-                icon: "map",
-            });
-            return crumbs;
-        }
 
         // For a location, walk up the parent chain
         const location = selectedNode.data as Location;
@@ -49,16 +38,6 @@ export default function ExplorerBreadcrumb({
         while (current) {
             locationChain.unshift(current);
             current = allLocations.find((l) => l.id === current!.parent_id);
-        }
-
-        // Find the map
-        const map = allMaps.find((m) => m.id === location.map_id);
-        if (map) {
-            crumbs.push({
-                label: map.name,
-                node: { type: "map", data: map },
-                icon: "map",
-            });
         }
 
         // Add each location in the chain
@@ -96,7 +75,6 @@ export default function ExplorerBreadcrumb({
                                 }
                             `}
                         >
-                            {crumb.icon === "map" && <MapIcon size={12} className="shrink-0 text-accent/60" />}
                             {crumb.icon === "location" && <MapPin size={12} className="shrink-0 opacity-60" />}
                             {crumb.label}
                         </button>

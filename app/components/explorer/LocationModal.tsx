@@ -6,9 +6,10 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, MapIcon, ChevronDown } from "lucide-react";
 import gsap from "gsap";
 import { useCreateLocation, useUpdateLocation } from "@/services/useLocations";
+import { useGetMaps } from "@/services/useMaps";
 import type { Location, LocationInsert } from "@/types/database";
 
 interface LocationModalProps {
@@ -16,14 +17,15 @@ interface LocationModalProps {
     editing?: Location | null;
     /** Pre-filled context for new locations */
     defaults?: {
-        map_id: number;
-        parent_id: number | null;
+        map_id?: number | null;
+        parent_id?: number | null;
     };
 }
 
 type FormState = {
     name: string;
     type: string;
+    map_id: number | "";
     arrival_x: number | string;
     arrival_y: number | string;
     arrival_yaw: number | string;
@@ -32,10 +34,12 @@ type FormState = {
 export default function LocationModal({ onClose, editing, defaults }: LocationModalProps) {
     const createLocation = useCreateLocation();
     const updateLocation = useUpdateLocation();
+    const { data: maps = [] } = useGetMaps();
 
     const [form, setForm] = useState<FormState>({
         name: editing?.name ?? "",
         type: editing?.type ?? "",
+        map_id: editing?.map_id ?? defaults?.map_id ?? "",
         arrival_x: editing?.arrival_x ?? "",
         arrival_y: editing?.arrival_y ?? "",
         arrival_yaw: editing?.arrival_yaw ?? "",
@@ -76,7 +80,7 @@ export default function LocationModal({ onClose, editing, defaults }: LocationMo
             arrival_x: toNum(form.arrival_x),
             arrival_y: toNum(form.arrival_y),
             arrival_yaw: toNum(form.arrival_yaw),
-            map_id: editing?.map_id ?? defaults?.map_id ?? 0,
+            map_id: form.map_id === "" ? null : Number(form.map_id),
             parent_id: editing?.parent_id ?? defaults?.parent_id ?? null,
         };
 
@@ -124,15 +128,35 @@ export default function LocationModal({ onClose, editing, defaults }: LocationMo
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-[11px] font-medium text-muted mb-1">Type</label>
-                        <input
-                            type="text"
-                            value={form.type}
-                            onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-                            placeholder="e.g. room, floor, aisle, zone"
-                            className="w-full rounded-lg bg-surface border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted/40 outline-none focus:border-accent/40 transition-colors"
-                        />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[11px] font-medium text-muted mb-1">Type</label>
+                            <input
+                                type="text"
+                                value={form.type}
+                                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+                                placeholder="e.g. room, floor"
+                                className="w-full rounded-lg bg-surface border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted/40 outline-none focus:border-accent/40 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-medium text-muted mb-1">Associated Map (Optional)</label>
+                            <div className="relative">
+                                <select
+                                    value={form.map_id}
+                                    onChange={(e) => setForm((p) => ({ ...p, map_id: e.target.value ? Number(e.target.value) : "" }))}
+                                    className="w-full appearance-none rounded-lg bg-surface border border-border px-3 py-2 pr-8 text-sm text-foreground outline-none focus:border-accent/40 transition-colors"
+                                >
+                                    <option value="">No map</option>
+                                    {maps.map((map) => (
+                                        <option key={map.id} value={map.id}>
+                                            {map.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
