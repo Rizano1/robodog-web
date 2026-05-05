@@ -10,12 +10,10 @@ import { Compass } from "lucide-react";
 import ExplorerTreeSidebar, { type ExplorerNode } from "@/app/components/explorer/ExplorerTreeSidebar";
 import ExplorerBreadcrumb from "@/app/components/explorer/ExplorerBreadcrumb";
 import ExplorerMainContent from "@/app/components/explorer/ExplorerMainContent";
-import { useGetMaps } from "@/services/useMaps";
 import { useGetAllLocations } from "@/services/useLocations";
 
 export default function SpatialExplorer() {
     const [selectedNode, setSelectedNode] = useState<ExplorerNode | null>(null);
-    const { data: allMaps = [] } = useGetMaps();
     const { data: allLocations = [] } = useGetAllLocations();
 
     const handleNavigate = (node: ExplorerNode | null) => {
@@ -34,7 +32,6 @@ export default function SpatialExplorer() {
             <ExplorerBreadcrumb
                 selectedNode={selectedNode}
                 allLocations={allLocations}
-                allMaps={allMaps}
                 onNavigate={handleNavigate}
             />
 
