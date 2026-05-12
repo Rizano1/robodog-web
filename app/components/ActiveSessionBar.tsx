@@ -6,12 +6,14 @@
  */
 
 import React from "react";
-import { Square, Zap } from "lucide-react";
+import { Square, Zap, ArrowUpDown } from "lucide-react";
 import { useApp } from "@/app/context/AppContext";
 import { LAUNCH_PROFILES } from "@/app/config/launchProfiles";
+import { useSetSimpleCmd } from "@/app/hooks/useRosData";
 
 export default function ActiveSessionBar() {
     const { launchMode, launchProfile, stopLaunch } = useApp();
+    const sendSimpleCmd = useSetSimpleCmd();
 
     if (!launchMode || !launchProfile) return null;
 
@@ -37,13 +39,22 @@ export default function ActiveSessionBar() {
                 </div>
             </div>
 
-            <button
-                onClick={stopLaunch}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium bg-danger/20 text-danger hover:bg-danger/30 active:bg-danger/40 transition-colors"
-            >
-                <Square size={12} />
-                Stop Session
-            </button>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => sendSimpleCmd(0x21010202, 0, 0)}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 active:bg-accent/30 transition-colors"
+                >
+                    <ArrowUpDown size={12} />
+                    Toggle Sit/Stand
+                </button>
+                <button
+                    onClick={stopLaunch}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium bg-danger/20 text-danger hover:bg-danger/30 active:bg-danger/40 transition-colors"
+                >
+                    <Square size={12} />
+                    Stop Session
+                </button>
+            </div>
         </div>
     );
 }

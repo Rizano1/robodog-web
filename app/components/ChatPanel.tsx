@@ -16,7 +16,28 @@ import {
     useChatRealtime,
     messagesKey,
 } from "@/services/useChat";
+import { useOdometry } from "@/app/hooks/useRosData";
 import type { ChatMessage } from "@/types/database";
+
+const ImageWithLoader = ({ src, alt }: { src: string; alt: string }) => {
+    const [isLoading, setIsLoading] = useState(true);
+
+    return (
+        <div className="relative w-full max-w-sm rounded-lg border border-border/50 overflow-hidden min-h-[200px] flex items-center justify-center bg-black/5">
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 size={24} className="animate-spin text-muted" />
+                </div>
+            )}
+            <img
+                src={src}
+                alt={alt}
+                className={`w-full h-auto object-cover transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                onLoad={() => setIsLoading(false)}
+            />
+        </div>
+    );
+};
 
 export default function ChatPanel() {
     const {
@@ -29,6 +50,7 @@ export default function ChatPanel() {
 
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
+    const odom = useOdometry();
 
     // Fetch messages for the active session
     const { data: messages = [], isLoading: messagesLoading } =
@@ -51,10 +73,16 @@ export default function ChatPanel() {
 
         setInput("");
 
+        // Inject current robot coordinates as context for the AI
+        let promptWithContext = trimmed;
+        if (odom) {
+            promptWithContext += `\n\n[ROBOT_STATUS] Position: x=${odom.x.toFixed(2)}, y=${odom.y.toFixed(2)}, heading=${odom.heading.toFixed(0)}°`;
+        }
+
         sendMessage.mutate(
             {
                 session_id: activeSessionId,
-                user_prompt: trimmed,
+                user_prompt: promptWithContext,
             },
             {
                 onSuccess: (resp) => {
@@ -88,10 +116,13 @@ export default function ChatPanel() {
     /** Extract display text from the jsonb content field (stored as [{text: "..."}]) */
     const getContentText = (content: ChatMessage["content"]): string => {
         if (Array.isArray(content)) {
-            return content
+            const text = content
                 .map((part) => part.text)
                 .filter(Boolean)
                 .join("\n");
+            
+            // Remove the injected [ROBOT_STATUS] text for cleaner UI
+            return text.replace(/\n\n\[ROBOT_STATUS\].*$/s, "").trim();
         }
         return JSON.stringify(content);
     };
@@ -129,22 +160,49 @@ export default function ChatPanel() {
         );
     };
 
-    /** Render content text with newlines and inline formatting */
+    /** Render content text with newlines, inline formatting, and images from tool calls */
     const renderFormattedContent = (content: ChatMessage["content"]) => {
         const text = getContentText(content);
-        const lines = text.split("\n");
+        const lines = text ? text.split("\n") : [];
+
+        const imageUrls: string[] = [];
+        if (Array.isArray(content)) {
+            content.forEach((part: any) => {
+                if (part?.function_response?.name === "capture_and_upload_image") {
+                    const url = part.function_response.response?.data?.public_url;
+                    if (url) {
+                        imageUrls.push(url);
+                    }
+                }
+            });
+        }
+        if (imageUrls.length === 0 && lines.length === 0) return null;
 
         return (
-            <div className="px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">
-                {lines.map((line, idx) => (
-                    <React.Fragment key={idx}>
-                        {idx > 0 && <br />}
-                        {renderFormattedLine(line, idx)}
-                    </React.Fragment>
+            <div className="px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap flex flex-col gap-2">
+                {imageUrls.map((url, i) => (
+                    <ImageWithLoader
+                        key={`img-${i}`}
+                        src={url}
+                        alt="Captured view"
+                    />
                 ))}
+                {lines.length > 0 && (
+                    <div>
+                        {lines.map((line, idx) => (
+                            <React.Fragment key={idx}>
+                                {idx > 0 && <br />}
+                                {renderFormattedLine(line, idx)}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                )}
             </div>
         );
     };
+
+    const isWaitingForLlm = messages.length > 0 && getContentText(messages[messages.length - 1].content).includes("[ROBOT]");
+    const isWaiting = sendMessage.isPending || isWaitingForLlm;
 
     return (
         <div className="glass-panel flex flex-col h-full overflow-hidden">
@@ -182,7 +240,34 @@ export default function ChatPanel() {
                     </div>
                 )}
                 {messages.map((msg) => {
-                    const isUser = msg.role === "user";
+                    const rawText = getContentText(msg.content);
+                    const isRobot = rawText.includes("[ROBOT]");
+                    const isUser = msg.role === "user" && !isRobot;
+
+                    const formattedContent = renderFormattedContent(msg.content);
+
+                    if (!formattedContent) return null;
+
+                    if (isRobot) {
+                        // Strip [ROBOT] keyword for display
+                        const displayContent = rawText.replace(/\[ROBOT\]\s*/g, "");
+                        return (
+                            <div key={msg.id} className="flex flex-col items-center justify-center py-2">
+                                <div className="text-[13px] text-center px-4 py-2 rounded-2xl border border-green-500/30 bg-green-500/10 text-green-400 max-w-[90%] shadow-sm flex items-center gap-2">
+                                    <Bot size={16} className="opacity-70 shrink-0" />
+                                    <span>{displayContent}</span>
+                                </div>
+                                <p className="text-[10px] text-muted/40 mt-1.5 text-center">
+                                    {new Date(msg.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        second: "2-digit",
+                                    })}
+                                </p>
+                            </div>
+                        );
+                    }
+
                     return (
                         <div
                             key={msg.id}
@@ -194,8 +279,8 @@ export default function ChatPanel() {
                                 </div>
                             )}
                             <div className="max-w-[80%]">
-                            <div className={isUser ? "chat-bubble-user" : "chat-bubble-ai"}>
-                                    {renderFormattedContent(msg.content)}
+                                <div className={isUser ? "chat-bubble-user" : "chat-bubble-ai"}>
+                                    {formattedContent}
                                 </div>
                                 <p
                                     className={`text-[10px] text-muted/50 mt-1 ${isUser ? "text-right" : "text-left"}`}
@@ -217,7 +302,7 @@ export default function ChatPanel() {
                 })}
 
                 {/* Sending indicator — shown while backend is processing */}
-                {sendMessage.isPending && (
+                {isWaiting && (
                     <div className="flex gap-2.5 justify-start">
                         <div className="shrink-0 mt-1 flex h-7 w-7 items-center justify-center rounded-full bg-accent/15 text-accent">
                             <Bot size={14} />
@@ -239,11 +324,11 @@ export default function ChatPanel() {
                         onKeyDown={handleKeyDown}
                         placeholder="Type a command..."
                         className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted/50 outline-none py-1.5"
-                        disabled={sendMessage.isPending}
+                        disabled={isWaiting}
                     />
                     <button
                         onClick={handleSend}
-                        disabled={!input.trim() || sendMessage.isPending}
+                        disabled={!input.trim() || isWaiting}
                         className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white transition-all hover:bg-accent-hover disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Send size={14} />

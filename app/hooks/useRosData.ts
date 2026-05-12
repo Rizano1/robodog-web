@@ -478,3 +478,25 @@ export function useSetNavGoal() {
     console.log(`[roslibjs] Published /move_base_simple/goal (x=${x.toFixed(2)}, y=${y.toFixed(2)})`);
   }, []);
 }
+
+/** Publish to /simple_cmd for generic robot actions (like sit/stand) */
+export function useSetSimpleCmd() {
+  return useCallback((cmdCode: number, cmdValue: number = 0, cmdType: number = 0) => {
+    if (!rosInstance) {
+      console.warn("[roslibjs] Cannot publish /simple_cmd — not connected");
+      return;
+    }
+    const topic = new Topic({
+      ros: rosInstance,
+      name: "/simple_cmd",
+      messageType: "message_transformer/SimpleCMD",
+    });
+    const msg = {
+      cmd_code: cmdCode,
+      cmd_value: cmdValue,
+      type: cmdType,
+    };
+    topic.publish(msg);
+    console.log(`[roslibjs] Published /simple_cmd (code=${cmdCode}, value=${cmdValue})`);
+  }, []);
+}
