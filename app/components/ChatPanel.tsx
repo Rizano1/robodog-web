@@ -122,7 +122,7 @@ export default function ChatPanel() {
                 .join("\n");
             
             // Remove the injected [ROBOT_STATUS] text for cleaner UI
-            return text.replace(/\n\n\[ROBOT_STATUS\].*$/s, "").trim();
+            return text.replace(/\n\n\[ROBOT_STATUS\][\s\S]*$/, "").trim();
         }
         return JSON.stringify(content);
     };
