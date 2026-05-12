@@ -16,7 +16,7 @@ import {
     useChatRealtime,
     messagesKey,
 } from "@/services/useChat";
-import { useOdometry } from "@/app/hooks/useRosData";
+import { useOdometry, useRobotBasicState, useBatteryLevel } from "@/app/hooks/useRosData";
 import type { ChatMessage } from "@/types/database";
 
 const ImageWithLoader = ({ src, alt }: { src: string; alt: string }) => {
@@ -51,6 +51,8 @@ export default function ChatPanel() {
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
     const odom = useOdometry();
+    const rawState = useRobotBasicState();
+    const battery = useBatteryLevel();
 
     // Fetch messages for the active session
     const { data: messages = [], isLoading: messagesLoading } =
@@ -75,8 +77,31 @@ export default function ChatPanel() {
 
         // Inject current robot coordinates as context for the AI
         let promptWithContext = trimmed;
+        const statusElements = [];
         if (odom) {
-            promptWithContext += `\n\n[ROBOT_STATUS] Position: x=${odom.x.toFixed(2)}, y=${odom.y.toFixed(2)}, heading=${odom.heading.toFixed(0)}°`;
+            statusElements.push(`Position: x=${odom.x.toFixed(2)}, y=${odom.y.toFixed(2)}, heading=${odom.heading.toFixed(0)}°`);
+        }
+        if (rawState !== null) {
+            let stateName = "Unknown";
+            if (rawState === 1) stateName = "Sitting";
+            else if (rawState === 4) stateName = "Prepare";
+            else if (rawState === 5) stateName = "Sit-to-Stand";
+            else if (rawState === 6) stateName = "Standing";
+            else if (rawState === 7) stateName = "Stand-to-Sit";
+            else if (rawState === 8) stateName = "Protected";
+            else if (rawState === 9) stateName = "Posture Adj";
+            else if (rawState === 11) stateName = "Flipping";
+            else if (rawState === 17) stateName = "Resetting";
+            else if (rawState === 20) stateName = "Hello";
+            else stateName = `State ${rawState}`;
+            statusElements.push(`State: ${stateName} (${rawState})`);
+        }
+        if (battery !== null) {
+            statusElements.push(`Battery: ${battery}%`);
+        }
+        
+        if (statusElements.length > 0) {
+            promptWithContext += `\n\n[ROBOT_STATUS] ${statusElements.join(", ")}`;
         }
 
         sendMessage.mutate(

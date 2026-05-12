@@ -5,15 +5,25 @@
  * with a prominent Stop button to disconnect roslibjs.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Square, Zap, ArrowUpDown } from "lucide-react";
 import { useApp } from "@/app/context/AppContext";
 import { LAUNCH_PROFILES } from "@/app/config/launchProfiles";
-import { useSetSimpleCmd } from "@/app/hooks/useRosData";
+import { useSetSimpleCmd, useRosConnection } from "@/app/hooks/useRosData";
 
 export default function ActiveSessionBar() {
     const { launchMode, launchProfile, stopLaunch } = useApp();
     const sendSimpleCmd = useSetSimpleCmd();
+    const isConnected = useRosConnection();
+    const navModeSent = useRef(false);
+
+    useEffect(() => {
+        if (isConnected && launchProfile === "realRobot" && !navModeSent.current) {
+            // Send Navigation mode command
+            sendSimpleCmd(0x21010C03, 0, 0);
+            navModeSent.current = true;
+        }
+    }, [isConnected, launchProfile, sendSimpleCmd]);
 
     if (!launchMode || !launchProfile) return null;
 

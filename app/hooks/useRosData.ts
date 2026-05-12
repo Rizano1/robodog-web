@@ -500,3 +500,39 @@ export function useSetSimpleCmd() {
     console.log(`[roslibjs] Published /simple_cmd (code=${cmdCode}, value=${cmdValue})`);
   }, []);
 }
+
+/** Subscribe to generic std_msgs/Int32 for robot_basic_state */
+export function useRobotBasicState(): number | null {
+  const [state, setState] = useState<number | null>(null);
+  useEffect(() => {
+    const ros = getRosConnection();
+    const topic = new Topic({
+      ros,
+      name: "/robot_basic_state",
+      messageType: "std_msgs/Int32",
+      throttle_rate: 1000,
+    });
+    const handler = (msg: any) => setState(msg.data);
+    topic.subscribe(handler);
+    return () => topic.unsubscribe(handler);
+  }, []);
+  return state;
+}
+
+/** Subscribe to generic std_msgs/Int32 for battery_level */
+export function useBatteryLevel(): number | null {
+  const [battery, setBattery] = useState<number | null>(null);
+  useEffect(() => {
+    const ros = getRosConnection();
+    const topic = new Topic({
+      ros,
+      name: "/battery_level",
+      messageType: "std_msgs/Int32", 
+      throttle_rate: 5000,
+    });
+    const handler = (msg: any) => setBattery(msg.data);
+    topic.subscribe(handler);
+    return () => topic.unsubscribe(handler);
+  }, []);
+  return battery;
+}
