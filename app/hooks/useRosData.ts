@@ -481,9 +481,9 @@ export function useSetNavGoal() {
 
 /** Publish to /simple_cmd for generic robot actions (like sit/stand) */
 export function useSetSimpleCmd() {
-  return useCallback((cmdCode: number, cmdValue: number = 0, cmdType: number = 0) => {
+  return useCallback((cmdCode: number, cmdValue: number = 0, cmdType: number = 0, silent: boolean = false) => {
     if (!rosInstance) {
-      console.warn("[roslibjs] Cannot publish /simple_cmd — not connected");
+      if (!silent) console.warn("[roslibjs] Cannot publish /simple_cmd — not connected");
       return;
     }
     const topic = new Topic({
@@ -497,7 +497,9 @@ export function useSetSimpleCmd() {
       type: cmdType,
     };
     topic.publish(msg);
-    console.log(`[roslibjs] Published /simple_cmd (code=${cmdCode}, value=${cmdValue})`);
+    if (!silent) {
+        console.log(`[roslibjs] Published /simple_cmd (code=${cmdCode}, value=${cmdValue})`);
+    }
   }, []);
 }
 

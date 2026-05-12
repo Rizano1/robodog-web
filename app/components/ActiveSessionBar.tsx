@@ -18,11 +18,23 @@ export default function ActiveSessionBar() {
     const navModeSent = useRef(false);
 
     useEffect(() => {
-        if (isConnected && launchProfile === "realRobot" && !navModeSent.current) {
-            // Send Navigation mode command
+        if (!isConnected || launchProfile !== "realRobot") return;
+
+        // 1. Send Navigation mode command once upon connection
+        if (!navModeSent.current) {
             sendSimpleCmd(0x21010C03, 0, 0);
             navModeSent.current = true;
         }
+
+        // 2. Continuously send Heartbeat (0x21040001) at 2Hz (every 500ms)
+        // If the physical remote is off, the robot will enter Lose Control Protection State (8)
+        // without this heartbeat and refuse to execute commands like Stand Up.
+        const heartbeat = setInterval(() => {
+            // Send Heartbeat silently to avoid console spam
+            sendSimpleCmd(0x21040001, 0, 0, true);
+        }, 500);
+
+        return () => clearInterval(heartbeat);
     }, [isConnected, launchProfile, sendSimpleCmd]);
 
     if (!launchMode || !launchProfile) return null;
