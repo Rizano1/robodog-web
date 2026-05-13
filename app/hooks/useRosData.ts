@@ -529,7 +529,7 @@ export function useBatteryLevel(): number | null {
     const topic = new Topic({
       ros,
       name: "/battery_level",
-      messageType: "std_msgs/Int32", 
+      messageType: "std_msgs/Float64", 
       throttle_rate: 5000,
     });
     const handler = (msg: any) => setBattery(msg.data);
