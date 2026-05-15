@@ -74,7 +74,6 @@ export function useGetMessagesBySessionId(sessionId: number | null) {
                 .from("chat-messages")
                 .select("*")
                 .eq("session_id", sessionId!)
-                .eq("showed", true)
                 .order("created_at", { ascending: true });
 
             if (error) throw error;

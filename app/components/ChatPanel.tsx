@@ -99,7 +99,7 @@ export default function ChatPanel() {
         if (battery !== null) {
             statusElements.push(`Battery: ${battery}%`);
         }
-        
+
         if (statusElements.length > 0) {
             promptWithContext += `\n\n[ROBOT_STATUS] ${statusElements.join(", ")}`;
         }
@@ -145,7 +145,7 @@ export default function ChatPanel() {
                 .map((part) => part.text)
                 .filter(Boolean)
                 .join("\n");
-            
+
             // Remove the injected [ROBOT_STATUS] text for cleaner UI
             return text.replace(/\n\n\[ROBOT_STATUS\][\s\S]*$/, "").trim();
         }
@@ -193,6 +193,7 @@ export default function ChatPanel() {
         const imageUrls: string[] = [];
         if (Array.isArray(content)) {
             content.forEach((part: any) => {
+                console.log("part", part)
                 if (part?.function_response?.name === "capture_and_upload_image") {
                     const url = part.function_response.response?.data?.public_url;
                     if (url) {
