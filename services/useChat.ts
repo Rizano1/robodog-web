@@ -236,8 +236,8 @@ export function useChatRealtime(sessionId: number | null) {
                     if (payload.eventType === "INSERT") {
                         const newMsg = payload.new as ChatMessage;
 
-                        // Skip messages that should not be displayed in the UI
-                        if (newMsg.showed === false) return;
+                        // We allow all messages to enter the cache. 
+                        // The UI (ChatPanel) will decide whether to render them or not based on content.
 
                         queryClient.setQueryData<ChatMessage[]>(key, (old = []) => {
                             // Skip if this exact message ID is already in the cache

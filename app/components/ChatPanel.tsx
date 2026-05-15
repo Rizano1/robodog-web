@@ -193,7 +193,6 @@ export default function ChatPanel() {
         const imageUrls: string[] = [];
         if (Array.isArray(content)) {
             content.forEach((part: any) => {
-                console.log("part", part)
                 if (part?.function_response?.name === "capture_and_upload_image") {
                     const url = part.function_response.response?.data?.public_url;
                     if (url) {
