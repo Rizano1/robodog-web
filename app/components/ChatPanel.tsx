@@ -187,8 +187,8 @@ export default function ChatPanel() {
 
     /** Render content text with newlines, inline formatting, and images from tool calls */
     const renderFormattedContent = (content: ChatMessage["content"]) => {
-        const text = getContentText(content);
-        const lines = text ? text.split("\n") : [];
+        let text = getContentText(content);
+        let lines = text ? text.split("\n") : [];
 
         const imageUrls: string[] = [];
         if (Array.isArray(content)) {
@@ -197,8 +197,9 @@ export default function ChatPanel() {
                     const url = part.function_response.response?.data?.public_url;
                     if (url) {
                         imageUrls.push(url);
+                        lines = []
                     }
-                }
+                } else if (part?.function_response || part?.function_call) return null
             });
         }
         if (imageUrls.length === 0 && lines.length === 0) return null;
