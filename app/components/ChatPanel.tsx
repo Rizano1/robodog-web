@@ -75,8 +75,7 @@ export default function ChatPanel() {
 
         setInput("");
 
-        // Inject current robot coordinates as context for the AI
-        let promptWithContext = trimmed;
+        // Build robot status as system_prompt (not injected into user prompt)
         const statusElements = [];
         if (odom) {
             statusElements.push(`Position: x=${odom.x.toFixed(2)}, y=${odom.y.toFixed(2)}, heading=${odom.heading.toFixed(0)}°`);
@@ -100,14 +99,15 @@ export default function ChatPanel() {
             statusElements.push(`Battery: ${battery}%`);
         }
 
-        if (statusElements.length > 0) {
-            promptWithContext += `\n\n[ROBOT_STATUS] ${statusElements.join(", ")}`;
-        }
+        const robotStatus = statusElements.length > 0
+            ? `[ROBOT_STATUS] ${statusElements.join(", ")}`
+            : undefined;
 
         sendMessage.mutate(
             {
                 session_id: activeSessionId,
-                user_prompt: promptWithContext,
+                user_prompt: trimmed,
+                system_prompt: robotStatus,
             },
             {
                 onSuccess: (resp) => {
