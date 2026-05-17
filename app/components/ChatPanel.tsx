@@ -271,7 +271,7 @@ export default function ChatPanel() {
                 )}
                 {messages.map((msg) => {
                     const rawText = getContentText(msg.content);
-                    const isRobot = rawText.includes("[ROBOT]");
+                    const isRobot = rawText.includes("ROBOT_FEEDBACK");
                     const isUser = msg.role === "user" && !isRobot;
 
                     const formattedContent = renderFormattedContent(msg.content);
@@ -279,7 +279,7 @@ export default function ChatPanel() {
                     if (!formattedContent) return null;
 
                     if (isRobot) {
-                        // Strip [ROBOT] keyword for display
+                        // Strip ROBOT_FEEDBACK keyword for display
                         const displayContent = rawText.replace(/\[ROBOT_FEEDBACK\]\s*/g, "");
                         return (
                             <div key={msg.id} className="flex flex-col items-center justify-center py-2">
