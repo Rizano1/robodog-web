@@ -189,6 +189,7 @@ export default function ChatPanel() {
     const renderFormattedContent = (content: ChatMessage["content"]) => {
         let text = getContentText(content);
         let lines = text ? text.split("\n") : [];
+        let hasToolResponse = false;
 
         const imageUrls: string[] = [];
         if (Array.isArray(content)) {
@@ -199,9 +200,12 @@ export default function ChatPanel() {
                         imageUrls.push(url);
                         lines = []
                     }
-                } else if (part?.function_response || part?.function_call) return null
+                } else if (part?.function_response || part?.function_call) {
+                    hasToolResponse = true;
+                }
             });
         }
+        if (hasToolResponse) return null;
         if (imageUrls.length === 0 && lines.length === 0) return null;
 
         return (
@@ -271,7 +275,7 @@ export default function ChatPanel() {
                     const isUser = msg.role === "user" && !isRobot;
 
                     const formattedContent = renderFormattedContent(msg.content);
-
+                    console.log("formattedContent", formattedContent)
                     if (!formattedContent) return null;
 
                     if (isRobot) {
