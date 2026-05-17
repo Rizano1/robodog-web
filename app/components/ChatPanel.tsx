@@ -231,7 +231,7 @@ export default function ChatPanel() {
         );
     };
 
-    const isWaitingForLlm = messages.length > 0 && getContentText(messages[messages.length - 1].content).includes("[ROBOT]");
+    const isWaitingForLlm = messages.length > 0 && getContentText(messages[messages.length - 1].content).includes("[ROBOT_FEEDBACK]");
     const isWaiting = sendMessage.isPending || isWaitingForLlm;
 
     return (
@@ -280,7 +280,7 @@ export default function ChatPanel() {
 
                     if (isRobot) {
                         // Strip [ROBOT] keyword for display
-                        const displayContent = rawText.replace(/\[ROBOT\]\s*/g, "");
+                        const displayContent = rawText.replace(/\[ROBOT_FEEDBACK\]\s*/g, "");
                         return (
                             <div key={msg.id} className="flex flex-col items-center justify-center py-2">
                                 <div className="text-[13px] text-center px-4 py-2 rounded-2xl border border-green-500/30 bg-green-500/10 text-green-400 max-w-[90%] shadow-sm flex items-center gap-2">
