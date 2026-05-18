@@ -106,8 +106,8 @@ export default function ChatPanel() {
         sendMessage.mutate(
             {
                 session_id: activeSessionId,
-                user_prompt: trimmed,
-                system_prompt: robotStatus,
+                user_prompt: trimmed + ` (${robotStatus})`,
+                // system_prompt: robotStatus,
             },
             {
                 onSuccess: (resp) => {
@@ -275,7 +275,7 @@ export default function ChatPanel() {
                     const isUser = msg.role === "user" && !isRobot;
 
                     const formattedContent = renderFormattedContent(msg.content);
-                    console.log("formattedContent", formattedContent)
+                    // console.log("formattedContent", formattedContent)
                     if (!formattedContent) return null;
 
                     if (isRobot) {
