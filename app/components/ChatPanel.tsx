@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { PlusCircle, Send, Bot, User, Loader2 } from "lucide-react";
+import { PlusCircle, Send, Bot, User, Loader2, ChevronDown } from "lucide-react";
 import { useApp } from "@/app/context/AppContext";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -49,10 +49,19 @@ export default function ChatPanel() {
     } = useApp();
 
     const [input, setInput] = useState("");
+    const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
     const scrollRef = useRef<HTMLDivElement>(null);
     const odom = useOdometry();
     const rawState = useRobotBasicState();
     const battery = useBatteryLevel();
+
+    const MODELS = [
+        "gemini-3.1-pro-preview",
+        "gemini-3-flash-preview",
+        "gemini-3.1-flash-lite",
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+    ];
 
     // Fetch messages for the active session
     const { data: messages = [], isLoading: messagesLoading } =
@@ -106,7 +115,8 @@ export default function ChatPanel() {
         sendMessage.mutate(
             {
                 session_id: activeSessionId,
-                user_prompt: trimmed + ` (${robotStatus})`,
+                user_prompt: trimmed + ` ${robotStatus}`,
+                model_name: selectedModel,
                 // system_prompt: robotStatus,
             },
             {
@@ -240,17 +250,33 @@ export default function ChatPanel() {
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
                 <div className="flex items-center gap-2">
                     <Bot size={18} className="text-accent" />
-                    <h2 className="text-sm font-semibold text-foreground truncate max-w-[200px]">
+                    <h2 className="text-sm font-semibold text-foreground truncate max-w-[160px]">
                         {sessionTitle}
                     </h2>
                 </div>
-                <button
-                    onClick={handleNewSession}
-                    className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
-                >
-                    <PlusCircle size={14} />
-                    New Session
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Model selector */}
+                    <div className="relative flex items-center">
+                        <select
+                            id="model-select"
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            className="appearance-none bg-surface border border-border rounded-lg pl-2.5 pr-7 py-1.5 text-xs text-muted hover:text-foreground hover:border-accent/40 focus:outline-none focus:border-accent/60 transition-colors cursor-pointer"
+                        >
+                            {MODELS.map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={11} className="pointer-events-none absolute right-2 text-muted" />
+                    </div>
+                    <button
+                        onClick={handleNewSession}
+                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
+                    >
+                        <PlusCircle size={14} />
+                        New Session
+                    </button>
+                </div>
             </div>
 
             {/* Messages area */}
