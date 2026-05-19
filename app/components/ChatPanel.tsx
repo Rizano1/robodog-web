@@ -115,9 +115,8 @@ export default function ChatPanel() {
         sendMessage.mutate(
             {
                 session_id: activeSessionId,
-                user_prompt: trimmed + ` ${robotStatus}`,
+                user_prompt: trimmed + '\n\n' + robotStatus,
                 model_name: selectedModel,
-                // system_prompt: robotStatus,
             },
             {
                 onSuccess: (resp) => {
@@ -204,7 +203,7 @@ export default function ChatPanel() {
         const imageUrls: string[] = [];
         if (Array.isArray(content)) {
             content.forEach((part: any) => {
-                if (part?.function_response?.name === "capture_and_upload_image") {
+                if (part?.function_response?.name === "capture_and_inspect_image") {
                     const url = part.function_response.response?.data?.public_url;
                     if (url) {
                         imageUrls.push(url);
