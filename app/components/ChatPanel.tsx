@@ -29,6 +29,8 @@ import {
   User,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const ImageWithLoader = ({ src, alt }: { src: string; alt: string }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -74,7 +76,7 @@ export default function ChatPanel() {
     "gemini-2.5-pro",
     "gpt-4o",
     "gpt-4o-mini",
-    "qwen2.5:7b",
+    "qwen3.5:27b",
   ];
 
   // Fetch messages for the active session
@@ -132,7 +134,7 @@ export default function ChatPanel() {
     sendMessage.mutate(
       {
         session_id: activeSessionId,
-        user_prompt: trimmed + "\n\n" + robotStatus,
+        user_prompt: trimmed,
         model_name: selectedModel,
       },
       {
@@ -178,44 +180,11 @@ export default function ChatPanel() {
     return JSON.stringify(content);
   };
 
-  /** Render text with basic formatting: bold, italic, inline code */
-  const renderFormattedLine = (line: string, lineIdx: number) => {
-    // Split on formatting tokens: **bold**, `code`, *italic*
-    const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g);
-
-    return (
-      <span key={lineIdx}>
-        {parts.map((segment, i) => {
-          // Bold: **text**
-          if (segment.startsWith("**") && segment.endsWith("**")) {
-            return <strong key={i}>{segment.slice(2, -2)}</strong>;
-          }
-          // Inline code: `code`
-          if (segment.startsWith("`") && segment.endsWith("`")) {
-            return (
-              <code
-                key={i}
-                className="bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono"
-              >
-                {segment.slice(1, -1)}
-              </code>
-            );
-          }
-          // Italic: *text*
-          if (segment.startsWith("*") && segment.endsWith("*")) {
-            return <em key={i}>{segment.slice(1, -1)}</em>;
-          }
-          return <span key={i}>{segment}</span>;
-        })}
-      </span>
-    );
-  };
-
-  /** Render content text with newlines, inline formatting, and images from tool calls */
+  /** Render content text with markdown formatting and images from tool calls */
   const renderFormattedContent = (content: ChatMessage["content"]) => {
     let text = getContentText(content);
-    let lines = text ? text.split("\n") : [];
     let hasToolResponse = false;
+    let hasText = text.length > 0;
 
     const imageUrls: string[] = [];
     if (Array.isArray(content)) {
@@ -224,7 +193,7 @@ export default function ChatPanel() {
           const url = part.function_response.response?.data?.public_url;
           if (url) {
             imageUrls.push(url);
-            lines = [];
+            hasText = false;
           }
         } else if (part?.function_response || part?.function_call) {
           hasToolResponse = true;
@@ -232,21 +201,16 @@ export default function ChatPanel() {
       });
     }
     if (hasToolResponse) return null;
-    if (imageUrls.length === 0 && lines.length === 0) return null;
+    if (imageUrls.length === 0 && !hasText) return null;
 
     return (
-      <div className="px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap flex flex-col gap-2">
+      <div className="px-3.5 py-2.5 text-sm leading-relaxed flex flex-col gap-2">
         {imageUrls.map((url, i) => (
           <ImageWithLoader key={`img-${i}`} src={url} alt="Captured view" />
         ))}
-        {lines.length > 0 && (
-          <div>
-            {lines.map((line, idx) => (
-              <React.Fragment key={idx}>
-                {idx > 0 && <br />}
-                {renderFormattedLine(line, idx)}
-              </React.Fragment>
-            ))}
+        {hasText && (
+          <div className="chat-markdown">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
           </div>
         )}
       </div>
