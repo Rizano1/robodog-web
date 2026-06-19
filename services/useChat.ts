@@ -105,6 +105,7 @@ export interface SendMessagePayload {
     files?: string[];
     system_prompt?: string;
     model_name: string;
+    tags?: string[];
 }
 
 /** Shape of the response from the chat API: { status, data: { session_id, answer } } */
