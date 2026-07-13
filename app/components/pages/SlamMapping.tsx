@@ -68,7 +68,7 @@ export default function SlamMapping() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <h2 className="text-lg font-semibold text-foreground">SLAM Mapping</h2>
-                    <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[11px] font-medium text-purple-400">
+                    <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[11px] font-medium text-purple-600 dark:text-purple-400">
                         Live
                     </span>
                 </div>

@@ -318,7 +318,7 @@ export default function NavigationMap() {
             {/* Map area */}
             <div
                 ref={containerRef}
-                className="flex-1 relative bg-[#0c0c0e] overflow-hidden"
+                className="flex-1 relative bg-surface-active overflow-hidden"
                 onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
@@ -445,8 +445,8 @@ export default function NavigationMap() {
                         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-mono text-muted/30">S (-Y)</div>
                         <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-muted/30">W (-X)</div>
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] font-mono text-muted/30">E (+X)</div>
-                        <div className="absolute top-1/2 left-0 right-0 h-px bg-white/[0.04]" />
-                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/[0.04]" />
+                        <div className="absolute top-1/2 left-0 right-0 h-px bg-foreground/[0.04]" />
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-foreground/[0.04]" />
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="flex flex-col items-center gap-2 opacity-30">
                                 <Compass size={32} strokeWidth={1} />
@@ -497,7 +497,7 @@ export default function NavigationMap() {
                 </div>
 
                 {/* Status bar (coordinates) */}
-                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3 rounded-lg bg-black/60 px-3 py-1.5">
+                <div className="absolute bottom-3 left-3 z-20 flex items-center gap-3 rounded-lg bg-background/80 px-3 py-1.5 backdrop-blur-sm shadow-sm">
                     <span className={`text-[10px] font-mono ${isOdomConnected ? "text-foreground/80" : "text-muted/40"}`}>
                         X: {robotX.toFixed(2)}
                     </span>
@@ -513,7 +513,7 @@ export default function NavigationMap() {
                 </div>
 
                 {/* Scale indicator */}
-                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-1.5">
+                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-lg bg-background/80 px-3 py-1.5 backdrop-blur-sm shadow-sm">
                     <div className="h-px w-8 bg-foreground/30" />
                     <span className="text-[9px] font-mono text-foreground/40">
                         {hasMap && mapData ? `${(mapData.resolution * 20 / zoom).toFixed(1)}m` : "–"}

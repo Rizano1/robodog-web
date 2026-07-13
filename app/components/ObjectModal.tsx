@@ -168,7 +168,7 @@ export default function ObjectModal({ onClose, editing }: ObjectModalProps) {
                             </button>
 
                             {sopDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg bg-[#1c1c1e] border border-border shadow-xl max-h-48 overflow-y-auto">
+                                <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg bg-background border border-border shadow-xl max-h-48 overflow-y-auto">
                                     {/* No doc option */}
                                     <button
                                         type="button"

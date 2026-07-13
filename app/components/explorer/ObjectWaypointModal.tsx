@@ -189,7 +189,7 @@ export default function ObjectWaypointModal({ onClose, editing, defaults }: Obje
                             </button>
 
                             {objectDropdownOpen && (
-                                <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg bg-[#1c1c1e] border border-border shadow-xl max-h-52 overflow-hidden flex flex-col">
+                                <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg bg-background border border-border shadow-xl max-h-52 overflow-hidden flex flex-col">
                                     {/* Search input */}
                                     <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
                                         <Search size={12} className="text-muted" />

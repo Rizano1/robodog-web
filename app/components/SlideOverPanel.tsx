@@ -64,7 +64,7 @@ export default function SlideOverPanel({ session, onClose }: SlideOverPanelProps
         <div ref={backdropRef} className="fixed inset-0 z-50 slide-over-backdrop" onClick={handleClose}>
             <div
                 ref={panelRef}
-                className="absolute right-0 top-0 h-full w-full max-w-lg bg-[#111113] border-l border-border flex flex-col"
+                className="absolute right-0 top-0 h-full w-full max-w-lg bg-background border-l border-border flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

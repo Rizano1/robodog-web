@@ -29,10 +29,10 @@ import {
   Paperclip,
   PlusCircle,
   Send,
+  Tag,
   User,
   Volume2,
   VolumeX,
-  Tag,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -42,7 +42,7 @@ const ImageWithLoader = ({ src, alt }: { src: string; alt: string }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   return (
-    <div className="relative w-full max-w-sm rounded-lg border border-border/50 overflow-hidden min-h-[200px] flex items-center justify-center bg-black/5">
+    <div className="relative w-full max-w-sm rounded-lg border border-border/50 overflow-hidden min-h-[200px] flex items-center justify-center bg-surface-active">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 size={24} className="animate-spin text-muted" />
@@ -72,7 +72,7 @@ export default function ChatPanel() {
   const [attachedFiles, setAttachedFiles] = useState<
     { name: string; type: string; base64: string }[]
   >([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(["pengujian-e2e"]);
   const [tagInput, setTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -418,7 +418,7 @@ export default function ChatPanel() {
     sendMessage.mutate(
       {
         session_id: activeSessionId,
-        user_prompt: finalPrompt,
+        user_prompt: finalPrompt + (robotStatus ? `\n\n${robotStatus}` : ""),
         model_name: selectedModel,
         files: filePayload,
         tags: tags.length > 0 ? tags : undefined,
@@ -450,7 +450,7 @@ export default function ChatPanel() {
   const handleNewSession = () => {
     stopSpeech();
     lastReadMessageIdRef.current = null;
-    setTags([]);
+    // setTags([]);
     setTagInput("");
     setShowTagInput(false);
     newSession();
@@ -671,7 +671,7 @@ export default function ChatPanel() {
                 key={msg.id}
                 className="flex flex-col items-center justify-center py-2"
               >
-                <div className="text-[13px] text-center px-4 py-2 rounded-2xl border border-green-500/30 bg-green-500/10 text-green-400 max-w-[90%] shadow-sm flex items-center gap-2">
+                <div className="text-[13px] text-center px-4 py-2 rounded-2xl border border-success/30 bg-success-soft text-success max-w-[90%] shadow-sm flex items-center gap-2">
                   <Bot size={16} className="opacity-70 shrink-0" />
                   <span>{displayContent}</span>
                 </div>
@@ -791,7 +791,7 @@ export default function ChatPanel() {
 
       {/* Attached Files List */}
       {attachedFiles.length > 0 && (
-        <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border bg-black/5">
+        <div className="flex flex-wrap gap-2 px-4 py-2 border-t border-border bg-surface">
           {attachedFiles.map((file, idx) => (
             <div
               key={idx}
@@ -811,7 +811,7 @@ export default function ChatPanel() {
 
       {/* Active Tags List */}
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border bg-black/5">
+        <div className="flex flex-wrap gap-1.5 px-4 py-2 border-t border-border bg-surface">
           {tags.map((tag, idx) => (
             <div
               key={idx}
@@ -819,7 +819,9 @@ export default function ChatPanel() {
             >
               <span>#{tag}</span>
               <button
-                onClick={() => setTags((prev) => prev.filter((_, i) => i !== idx))}
+                onClick={() =>
+                  setTags((prev) => prev.filter((_, i) => i !== idx))
+                }
                 className="hover:bg-accent/25 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[10px] ml-1 text-accent"
               >
                 ✕
@@ -854,7 +856,7 @@ export default function ChatPanel() {
             disabled={isWaiting || sttLoading}
             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all ${
               isListening
-                ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600 animate-pulse"
+                ? "bg-danger-soft text-danger hover:bg-danger/20 animate-pulse"
                 : "text-muted hover:text-foreground hover:bg-surface-hover"
             }`}
             title={isListening ? "Stop listening" : "Start voice input"}

@@ -45,7 +45,7 @@ export default function CapturedGallery() {
                     {images.map((img) => (
                         <div
                             key={img.name}
-                            className="glass-panel group relative aspect-square overflow-hidden cursor-pointer bg-black/20"
+                            className="glass-panel group relative aspect-square overflow-hidden cursor-pointer bg-surface-active"
                             onClick={() => setSelectedImage(img.url)}
                         >
                             <img

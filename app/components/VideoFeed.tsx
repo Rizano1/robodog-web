@@ -47,7 +47,7 @@ export default function VideoFeed() {
             </div>
 
             {/* Video area */}
-            <div className="flex-1 relative bg-black flex items-center justify-center">
+            <div className="flex-1 relative bg-surface flex items-center justify-center border-t border-border">
                 {/* WebRTC stream iframe */}
                 <iframe
                     src={STREAM_URL}
@@ -57,12 +57,12 @@ export default function VideoFeed() {
                 />
 
                 {/* Timestamp overlay */}
-                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-md bg-black/60 px-2.5 py-1 backdrop-blur-sm z-10">
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-md bg-glass px-2.5 py-1 backdrop-blur-sm z-10 border border-border">
                     <span className="text-[11px] font-mono text-foreground/80">{timestamp}</span>
                 </div>
 
                 {/* Camera info overlay */}
-                <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-md bg-black/60 px-2.5 py-1 backdrop-blur-sm z-10">
+                <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-md bg-glass px-2.5 py-1 backdrop-blur-sm z-10 border border-border">
                     <span className="text-[10px] font-mono text-foreground/50">WebRTC • CAM-01</span>
                 </div>
             </div>

@@ -7,9 +7,10 @@
  */
 
 import React, { useRef, useEffect, useState } from "react";
-import { Camera, FileText, Clock, Menu, X, Dog, Image, Map, Scan, Compass, Box } from "lucide-react";
+import { Camera, FileText, Clock, Menu, X, Dog, Image, Map, Scan, Compass, Box, Sun, Moon } from "lucide-react";
 import gsap from "gsap";
 import { useApp } from "@/app/context/AppContext";
+import { useTheme } from "next-themes";
 
 const tabs = [
     { icon: Camera, label: "Inspection Hub" },
@@ -27,6 +28,12 @@ export default function Sidebar() {
     const indicatorRef = useRef<HTMLDivElement>(null);
     const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     /** Animate the sliding indicator to the active tab */
     useEffect(() => {
@@ -70,7 +77,7 @@ export default function Sidebar() {
             <aside
                 className={`
           fixed top-0 left-0 z-40 flex h-screen w-[220px] flex-col
-          border-r border-border bg-[#111113]/90 backdrop-blur-2xl
+          border-r border-border bg-sidebar-bg backdrop-blur-2xl
           transition-transform duration-300 ease-out
           lg:translate-x-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
@@ -114,8 +121,15 @@ export default function Sidebar() {
                 </nav>
 
                 {/* Footer */}
-                <div className="px-5 py-4 border-t border-border">
+                <div className="flex items-center justify-between px-5 py-4 border-t border-border">
                     <p className="text-[11px] text-muted">v0.1.0 — Web</p>
+                    <button
+                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                        aria-label="Toggle theme"
+                    >
+                        {mounted ? (theme === "dark" ? <Sun size={14} /> : <Moon size={14} />) : <div className="h-3.5 w-3.5" />}
+                    </button>
                 </div>
             </aside>
         </>

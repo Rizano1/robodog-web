@@ -62,7 +62,7 @@ export default function MapGallery() {
                             onClick={() => setSelectedMap(m.pgmUrl)}
                         >
                             {/* Map preview */}
-                            <div className="aspect-square bg-black/30 overflow-hidden">
+                            <div className="aspect-square bg-surface-active overflow-hidden">
                                 <img
                                     src={m.pgmUrl}
                                     alt={m.name}

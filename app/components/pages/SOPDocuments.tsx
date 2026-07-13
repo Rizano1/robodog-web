@@ -25,10 +25,10 @@ import {
 
 /** Map MIME types / extensions to icons and colors */
 function getFileIcon(mimeType: string) {
-    if (mimeType.includes("pdf")) return { icon: FileText, color: "text-red-400" };
+    if (mimeType.includes("pdf")) return { icon: FileText, color: "text-red-500" };
     if (mimeType.includes("sheet") || mimeType.includes("excel") || mimeType.includes("xlsx"))
-        return { icon: FileSpreadsheet, color: "text-green-400" };
-    if (mimeType.includes("image")) return { icon: Image, color: "text-purple-400" };
+        return { icon: FileSpreadsheet, color: "text-green-600 dark:text-green-400" };
+    if (mimeType.includes("image")) return { icon: Image, color: "text-purple-600 dark:text-purple-400" };
     return { icon: File, color: "text-muted" };
 }
 

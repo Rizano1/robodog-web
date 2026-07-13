@@ -1,7 +1,30 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
-@theme inline {
+:root {
+  --color-background: #f4f6fb;
+  --color-foreground: #1a1d2e;
+  --color-surface: rgba(255, 255, 255, 0.75);
+  --color-surface-hover: rgba(255, 255, 255, 0.90);
+  --color-surface-active: rgba(100, 120, 200, 0.10);
+  --color-border: rgba(100, 120, 180, 0.12);
+  --color-border-strong: rgba(100, 120, 180, 0.22);
+  --color-muted: #6e7191;
+  --color-accent: #3b6df5;
+  --color-accent-hover: #2952cc;
+  --color-accent-soft: rgba(59, 109, 245, 0.12);
+  --color-success: #22c55e;
+  --color-success-soft: rgba(34, 197, 94, 0.12);
+  --color-warning: #f59e0b;
+  --color-warning-soft: rgba(245, 158, 11, 0.12);
+  --color-danger: #ef4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.12);
+  --color-glass: rgba(255, 255, 255, 0.80);
+  --color-glass-light: rgba(255, 255, 255, 0.70);
+  --color-sidebar-bg: rgba(240, 242, 250, 0.92);
+}
+
+.dark {
   --color-background: #0a0a0a;
   --color-foreground: #f5f5f7;
   --color-surface: rgba(255, 255, 255, 0.04);
@@ -21,6 +44,30 @@
   --color-danger-soft: rgba(255, 69, 58, 0.15);
   --color-glass: rgba(28, 28, 30, 0.72);
   --color-glass-light: rgba(44, 44, 46, 0.65);
+  --color-sidebar-bg: rgba(18, 18, 20, 0.92);
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-surface-active: var(--color-surface-active);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-muted: var(--color-muted);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
+  --color-glass: var(--color-glass);
+  --color-glass-light: var(--color-glass-light);
+  --color-sidebar-bg: var(--color-sidebar-bg);
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
@@ -28,6 +75,9 @@
 
 /* ── Base ────────────────────────────────────────── */
 html {
+  color-scheme: light;
+}
+.dark {
   color-scheme: dark;
 }
 
@@ -37,6 +87,27 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Light-mode visual polish ────────────────────── */
+html:not(.dark) body {
+  background: linear-gradient(145deg, #eef1f9 0%, #f4f6fb 35%, #f0f4ff 70%, #f8f0fb 100%);
+}
+
+html:not(.dark) .glass-panel {
+  box-shadow:
+    0 1px 3px rgba(100, 120, 180, 0.08),
+    0 8px 24px rgba(100, 120, 180, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: rgba(100, 120, 180, 0.15);
+}
+
+html:not(.dark) .glass-panel-light {
+  box-shadow:
+    0 1px 2px rgba(100, 120, 180, 0.06),
+    0 4px 12px rgba(100, 120, 180, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-color: rgba(100, 120, 180, 0.12);
 }
 
 /* ── GPU layer promotion for animated elements ───── */
@@ -54,22 +125,22 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--color-border-strong);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-muted);
 }
 
 /* ── Glass panel utility ─────────────────────────── */
 .glass-panel {
-  background: rgba(28, 28, 30, 0.92);
+  background: var(--color-glass);
   border: 1px solid var(--color-border);
   border-radius: 16px;
 }
 
 .glass-panel-light {
-  background: rgba(44, 44, 46, 0.88);
+  background: var(--color-glass-light);
   border: 1px solid var(--color-border);
   border-radius: 12px;
 }
@@ -77,8 +148,8 @@ body {
 /* ── Grid pattern for navigation map ─────────────── */
 .grid-pattern {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
   background-size: 30px 30px;
 }
 
@@ -104,7 +175,7 @@ body {
 }
 
 .chat-bubble-ai {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-surface-active);
   color: var(--color-foreground);
   border-radius: 18px 18px 18px 4px;
 }
@@ -150,20 +221,19 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface-active);
+  border: 1px solid var(--color-border);
+  color: var(--color-foreground);
   cursor: pointer;
   transition: all 0.15s ease;
   backdrop-filter: blur(4px);
 }
 .map-ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
 }
 .map-ctrl-btn:active {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--color-border);
   transform: scale(0.93);
 }
 
@@ -195,18 +265,19 @@ body {
 .chat-markdown h1 {
   font-size: 1.15em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border);
 }
 .chat-markdown h2 {
   font-size: 1.05em;
 }
 .chat-markdown h3 {
   font-size: 0.95em;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-foreground);
+  opacity: 0.85;
 }
 .chat-markdown h4 {
   font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--color-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -222,7 +293,7 @@ body {
 /* Bold & italic */
 .chat-markdown strong {
   font-weight: 600;
-  color: #fff;
+  color: var(--color-foreground);
 }
 .chat-markdown em {
   font-style: italic;
@@ -242,7 +313,7 @@ body {
   padding-left: 0.2em;
 }
 .chat-markdown li::marker {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--color-muted);
 }
 .chat-markdown li > p {
   margin: 0;
@@ -256,18 +327,18 @@ body {
 
 /* Inline code */
 .chat-markdown code {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-surface-active);
   padding: 0.15em 0.45em;
   border-radius: 5px;
   font-family: var(--font-mono);
   font-size: 0.82em;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
 }
 
 /* Code blocks */
 .chat-markdown pre {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 0.85em 1em;
   margin: 0.65em 0;
@@ -289,40 +360,41 @@ body {
   border-spacing: 0;
   margin: 0.75em 0;
   font-size: 0.82em;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
 }
 .chat-markdown thead th {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--color-surface);
   font-weight: 600;
   text-align: left;
   padding: 0.6em 0.85em;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-foreground);
   font-size: 0.92em;
   white-space: nowrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid var(--color-border);
 }
 .chat-markdown thead th:not(:last-child) {
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid var(--color-border);
 }
 .chat-markdown tbody td {
   padding: 0.55em 0.85em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
   vertical-align: top;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-foreground);
+  opacity: 0.9;
 }
 .chat-markdown tbody td:not(:last-child) {
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-right: 1px solid var(--color-border);
 }
 .chat-markdown tbody tr:last-child td {
   border-bottom: none;
 }
 .chat-markdown tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface);
 }
 .chat-markdown tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-surface-hover);
 }
 
 /* Blockquote */
@@ -330,9 +402,10 @@ body {
   border-left: 3px solid var(--color-accent);
   margin: 0.6em 0;
   padding: 0.35em 0.85em;
-  background: rgba(10, 132, 255, 0.05);
+  background: var(--color-accent-soft);
   border-radius: 0 8px 8px 0;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-foreground);
+  opacity: 0.85;
 }
 .chat-markdown blockquote p {
   margin: 0.2em 0;
@@ -345,8 +418,8 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.12) 20%,
-    rgba(255, 255, 255, 0.12) 80%,
+    var(--color-border-strong) 20%,
+    var(--color-border-strong) 80%,
     transparent
   );
   margin: 1em 0;
@@ -356,7 +429,7 @@ body {
 .chat-markdown a {
   color: var(--color-accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(10, 132, 255, 0.3);
+  border-bottom: 1px solid var(--color-accent-soft);
   transition: border-color 0.15s ease;
 }
 .chat-markdown a:hover {

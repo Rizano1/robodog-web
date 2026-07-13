@@ -1,0 +1,6 @@
+# Ganti dengan IP lokal komputer kamu saat ini
+https://192.168.1.xxx:443 {
+    reverse_proxy nextjs-app:3000
+    
+    tls internal
+}
