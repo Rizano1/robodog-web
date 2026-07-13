@@ -181,7 +181,7 @@ export function getTopicConfig(mode: string): TopicConfig {
 }
 
 // ─── OccupancyGrid → Canvas Data URI ─────────────────
-function occupancyGridToDataUri(msg: any): MapData | null {
+function occupancyGridToDataUri(msg: any, isDark: boolean): MapData | null {
   try {
     const { info, data } = msg;
     const width = info.width;
@@ -205,6 +205,15 @@ function occupancyGridToDataUri(msg: any): MapData | null {
     // We must flip Y so the image matches ROS orientation:
     //   Canvas row 0 (top of image) ← Grid row (height-1) (top of map / north)
     //   Canvas row (height-1)       ← Grid row 0           (bottom of map / south)
+    // Colors based on theme
+    const rUnk = isDark ? 45 : 230;
+    const gUnk = isDark ? 40 : 235;
+    const bUnk = isDark ? 40 : 240;
+
+    const rFree = isDark ? 20 : 255;
+    const gFree = isDark ? 25 : 255;
+    const bFree = isDark ? 30 : 255;
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         // Read from the grid bottom-up so image top = map north
@@ -214,19 +223,26 @@ function occupancyGridToDataUri(msg: any): MapData | null {
 
         if (val === -1) {
           // Unknown
-          pixels[pixelIdx] = 45;
-          pixels[pixelIdx + 1] = 40;
-          pixels[pixelIdx + 2] = 40;
+          pixels[pixelIdx] = rUnk;
+          pixels[pixelIdx + 1] = gUnk;
+          pixels[pixelIdx + 2] = bUnk;
           pixels[pixelIdx + 3] = 255;
         } else if (val === 0) {
           // Free space
-          pixels[pixelIdx] = 20;
-          pixels[pixelIdx + 1] = 25;
-          pixels[pixelIdx + 2] = 30;
+          pixels[pixelIdx] = rFree;
+          pixels[pixelIdx + 1] = gFree;
+          pixels[pixelIdx + 2] = bFree;
           pixels[pixelIdx + 3] = 255;
         } else {
-          // Occupied
-          const color = Math.min(255, Math.floor(50 + (val / 100) * 205));
+          // Occupied (val 1 to 100)
+          let color;
+          if (isDark) {
+            // Dark mode: obstacles are light gray/white (val=100 -> 255)
+            color = Math.min(255, Math.floor(50 + (val / 100) * 205));
+          } else {
+            // Light mode: obstacles are dark gray/black (val=100 -> 0)
+            color = Math.max(0, Math.floor(205 - (val / 100) * 205));
+          }
           pixels[pixelIdx] = color;
           pixels[pixelIdx + 1] = color;
           pixels[pixelIdx + 2] = color;
@@ -249,6 +265,26 @@ function occupancyGridToDataUri(msg: any): MapData | null {
 export function useMapData(mode: string = "realRobot"): MapData | null {
   const [mapData, setMapData] = useState<MapData | null>(null);
   const config = getTopicConfig(mode);
+  const lastMsgRef = useRef<any>(null);
+  const isDarkRef = useRef<boolean>(true);
+
+  // Observe HTML class changes to redraw the map instantly when theme changes
+  useEffect(() => {
+    const checkTheme = () => {
+      const dark = document.documentElement.classList.contains("dark");
+      if (dark !== isDarkRef.current) {
+        isDarkRef.current = dark;
+        if (lastMsgRef.current) {
+          const result = occupancyGridToDataUri(lastMsgRef.current, dark);
+          if (result) setMapData(result);
+        }
+      }
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const ros = getRosConnection();
@@ -270,7 +306,8 @@ export function useMapData(mode: string = "realRobot"): MapData | null {
       lastUpdate = now;
 
       console.log(`[roslibjs] Map info: ${msg?.info?.width}x${msg?.info?.height}, data length: ${msg?.data?.length}`);
-      const result = occupancyGridToDataUri(msg);
+      lastMsgRef.current = msg;
+      const result = occupancyGridToDataUri(msg, isDarkRef.current);
       if (result) {
         console.log(`[roslibjs] Map converted: ${result.width}x${result.height}`);
         setMapData(result);

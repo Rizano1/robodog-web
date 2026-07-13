@@ -352,7 +352,7 @@ export default function NavigationMap() {
                             <img
                                 src={mapData.dataUri}
                                 alt="Occupancy grid map"
-                                className="absolute inset-0 w-full h-full theme-invert-map"
+                                className="absolute inset-0 w-full h-full"
                                 draggable={false}
                                 style={{ imageRendering: "pixelated", objectFit: "fill" }}
                             />

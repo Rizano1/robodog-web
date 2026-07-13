@@ -110,10 +110,6 @@ html:not(.dark) .glass-panel-light {
   border-color: rgba(100, 120, 180, 0.12);
 }
 
-html:not(.dark) .theme-invert-map {
-  filter: invert(0.92) hue-rotate(180deg);
-}
-
 /* ── GPU layer promotion for animated elements ───── */
 [class*="animate-"], .pulse-glow {
   will-change: transform, opacity;
