@@ -55,13 +55,10 @@ function NativeWebRTCPlayer({ streamUrl }: { streamUrl: string }) {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
 
-        const formData = new URLSearchParams();
-        formData.append("type", offer.type);
-        formData.append("sdp", offer.sdp!);
-
+        // go2rtc expects raw SDP as the POST body
         const response = await fetch(webrtcUrl, {
           method: "POST",
-          body: formData,
+          body: offer.sdp,
         });
 
         if (!response.ok) {
@@ -69,6 +66,7 @@ function NativeWebRTCPlayer({ streamUrl }: { streamUrl: string }) {
         }
 
         const answerSdp = await response.text();
+        // go2rtc returns raw SDP text or JSON. Usually raw SDP.
         let sdpObj = { type: "answer", sdp: answerSdp };
         if (answerSdp.trim().startsWith("{")) {
           sdpObj = JSON.parse(answerSdp);
