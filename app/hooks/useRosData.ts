@@ -234,18 +234,19 @@ function occupancyGridToDataUri(msg: any, isDark: boolean): MapData | null {
           pixels[pixelIdx + 2] = bFree;
           pixels[pixelIdx + 3] = 255;
         } else {
-          // Occupied (val 1 to 100)
-          let color;
           if (isDark) {
             // Dark mode: obstacles are light gray/white (val=100 -> 255)
-            color = Math.min(255, Math.floor(50 + (val / 100) * 205));
+            const color = Math.min(255, Math.floor(50 + (val / 100) * 205));
+            pixels[pixelIdx] = color;
+            pixels[pixelIdx + 1] = color;
+            pixels[pixelIdx + 2] = color;
           } else {
-            // Light mode: obstacles are dark gray/black (val=100 -> 0)
-            color = Math.max(0, Math.floor(205 - (val / 100) * 205));
+            // Light mode: obstacles are soft blue-gray (val=100 -> R:110, G:115, B:145)
+            const p = val / 100;
+            pixels[pixelIdx] = Math.floor(255 - p * 145);
+            pixels[pixelIdx + 1] = Math.floor(255 - p * 140);
+            pixels[pixelIdx + 2] = Math.floor(255 - p * 110);
           }
-          pixels[pixelIdx] = color;
-          pixels[pixelIdx + 1] = color;
-          pixels[pixelIdx + 2] = color;
           pixels[pixelIdx + 3] = 255;
         }
       }

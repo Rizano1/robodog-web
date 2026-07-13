@@ -57,13 +57,14 @@ export default function VideoFeed() {
       {/* Video area */}
       <div className="flex-1 relative bg-surface flex items-center justify-center border-t border-border">
         {/* WebRTC stream iframe */}
-        <iframe
+        <video
           src={STREAM_URL}
           className="absolute inset-0 w-full h-full border-0 bg-white"
-          allow="autoplay"
-          title="Robot Camera Stream"
+          autoPlay
+          controls
           style={{
-            filter: "brightness(1.2) contrast(1.1) saturate(1.05)",
+            filter: "brightness(1.2) contrast(1.1)",
+            objectFit: "contain",
           }}
         />
 
