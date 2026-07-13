@@ -1,16 +1,114 @@
 "use client";
 
 /**
- * Video feed panel — embeds the WebRTC camera stream as an iframe.
- * Falls back to a placeholder when no stream is available.
+ * Native WebRTC Player connecting directly to go2rtc API.
+ * This removes the need for stream.html iframe and gives full CSS control,
+ * eliminating the black background.
  */
 
-import { Circle, Video } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Video, Circle } from "lucide-react";
 
 const STREAM_URL =
   process.env.NEXT_PUBLIC_VIDEO_STREAM_URL ??
   "http://127.0.0.1:1984/stream.html?src=front_facing&mode=webrtc,mse,hls,mjpeg";
+
+function NativeWebRTCPlayer({ streamUrl }: { streamUrl: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [status, setStatus] = useState("Connecting WebRTC...");
+
+  useEffect(() => {
+    let pc = new RTCPeerConnection();
+    let active = true;
+
+    const start = async () => {
+      try {
+        // Parse go2rtc stream URL
+        let url;
+        try {
+          url = new URL(streamUrl);
+        } catch {
+          url = new URL(streamUrl, window.location.href);
+        }
+        const baseUrl = url.origin;
+        const src = url.searchParams.get("src") || "front_facing";
+        const webrtcUrl = `${baseUrl}/api/webrtc?src=${encodeURIComponent(src)}`;
+
+        pc.addTransceiver("video", { direction: "recvonly" });
+
+        pc.ontrack = (event) => {
+          if (videoRef.current && active) {
+            videoRef.current.srcObject = event.streams[0];
+            setStatus("LIVE");
+          }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+          if (
+            pc.iceConnectionState === "disconnected" ||
+            pc.iceConnectionState === "failed"
+          ) {
+            setStatus("Disconnected");
+          }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        const formData = new URLSearchParams();
+        formData.append("type", offer.type);
+        formData.append("sdp", offer.sdp!);
+
+        const response = await fetch(webrtcUrl, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch WebRTC SDP: ${response.status}`);
+        }
+
+        const answerSdp = await response.text();
+        let sdpObj = { type: "answer", sdp: answerSdp };
+        if (answerSdp.trim().startsWith("{")) {
+          sdpObj = JSON.parse(answerSdp);
+        }
+
+        if (active) {
+          await pc.setRemoteDescription(sdpObj as RTCSessionDescriptionInit);
+        }
+      } catch (err) {
+        console.error("WebRTC Connection Error:", err);
+        if (active) setStatus("Stream Error");
+      }
+    };
+
+    start();
+
+    return () => {
+      active = false;
+      pc.close();
+    };
+  }, [streamUrl]);
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center bg-transparent">
+      {status !== "LIVE" && (
+        <div className="absolute inset-0 flex items-center justify-center text-xs font-mono text-muted">
+          {status}
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="w-full h-full object-contain"
+        style={{ backgroundColor: "transparent" }}
+      />
+    </div>
+  );
+}
 
 export default function VideoFeed() {
   const [timestamp, setTimestamp] = useState("");
@@ -55,17 +153,9 @@ export default function VideoFeed() {
       </div>
 
       {/* Video area */}
-      <div className="flex-1 relative bg-surface flex items-center justify-center border-t border-border">
-        {/* WebRTC stream iframe */}
-        <iframe
-          src={STREAM_URL}
-          className="absolute inset-0 w-full h-full border-0 bg-white"
-          allow="autoplay"
-          title="Robot Camera Stream"
-          style={{
-            filter: "brightness(1.2) contrast(1.1) saturate(1.05)",
-          }}
-        />
+      <div className="flex-1 relative bg-surface-active flex items-center justify-center border-t border-border overflow-hidden">
+        {/* Native React WebRTC player instead of iframe */}
+        <NativeWebRTCPlayer streamUrl={STREAM_URL} />
 
         {/* Timestamp overlay */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-md bg-glass px-2.5 py-1 backdrop-blur-sm z-10 border border-border">
