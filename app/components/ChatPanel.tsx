@@ -109,52 +109,87 @@ export default function ChatPanel() {
     };
   }, []);
 
+  // Determine best supported audio MIME type for MediaRecorder
+  const getAudioMimeType = () => {
+    if (typeof MediaRecorder === "undefined") return "";
+    const candidateTypes = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/mp4",
+      "audio/aac",
+    ];
+    for (const type of candidateTypes) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return type;
+      }
+    }
+    return "";
+  };
+
   // Speech Recognition (STT) Handlers
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       audioChunksRef.current = [];
 
-      const options = { mimeType: "audio/webm" };
+      const mimeType = getAudioMimeType();
       let mediaRecorder: MediaRecorder;
-      try {
-        mediaRecorder = new MediaRecorder(stream, options);
-      } catch (e) {
+      if (mimeType) {
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+      } else {
         mediaRecorder = new MediaRecorder(stream);
       }
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: mediaRecorder.mimeType,
-        });
-
-        // Stop all tracks to release microphone
+        // Release hardware mic stream
         stream.getTracks().forEach((track) => track.stop());
 
-        // Send to STT endpoint
-        await processAudioTranscription(audioBlob);
+        const finalMime = mediaRecorder.mimeType || mimeType || "audio/webm";
+        const audioBlob = new Blob(audioChunksRef.current, { type: finalMime });
+
+        if (audioBlob.size < 100) {
+          alert("Tidak ada suara terdeteksi. Silakan coba lagi.");
+          return;
+        }
+
+        await processAudioTranscription(audioBlob, finalMime);
       };
 
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start();
+      // Start recording with 100ms timeslice to receive chunks continuously
+      mediaRecorder.start(100);
       setIsListening(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to start recording:", err);
       alert(
-        "Tidak dapat mengakses mikrofon. Pastikan Anda telah memberikan izin.",
+        "Tidak dapat mengakses mikrofon. Pastikan Anda telah memberikan izin di browser.",
       );
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isListening) {
-      mediaRecorderRef.current.stop();
+      try {
+        if (mediaRecorderRef.current.state !== "inactive") {
+          mediaRecorderRef.current.requestData();
+          mediaRecorderRef.current.stop();
+        }
+      } catch (e) {
+        console.warn("Error stopping MediaRecorder:", e);
+      }
       setIsListening(false);
     }
   };
@@ -167,11 +202,22 @@ export default function ChatPanel() {
     }
   };
 
-  const processAudioTranscription = async (audioBlob: Blob) => {
+  const processAudioTranscription = async (
+    audioBlob: Blob,
+    mimeType: string,
+  ) => {
     setSttLoading(true);
     try {
+      let extension = "webm";
+      if (mimeType.includes("mp4") || mimeType.includes("aac")) {
+        extension = "m4a";
+      } else if (mimeType.includes("ogg")) {
+        extension = "ogg";
+      } else if (mimeType.includes("wav")) {
+        extension = "wav";
+      }
+
       const formData = new FormData();
-      const extension = audioBlob.type.includes("webm") ? "webm" : "wav";
       formData.append("file", audioBlob, `audio.${extension}`);
 
       const response = await fetch("/api/stt", {
@@ -179,17 +225,22 @@ export default function ChatPanel() {
         body: formData,
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Gagal mentranskripsi audio.");
+        throw new Error(result.error || "Gagal mentranskripsi audio.");
       }
 
-      const result = await response.json();
-      if (result.text) {
-        setInput((prev) => (prev ? `${prev} ${result.text}` : result.text));
+      if (result.text && result.text.trim()) {
+        setInput((prev) =>
+          prev ? `${prev} ${result.text.trim()}` : result.text.trim(),
+        );
+      } else {
+        alert("Suara tidak terdengar jelas. Silakan coba lagi.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Transcription error:", err);
-      alert("Terjadi kesalahan saat mengubah suara ke teks.");
+      alert(err.message || "Terjadi kesalahan saat mengubah suara ke teks.");
     } finally {
       setSttLoading(false);
     }
